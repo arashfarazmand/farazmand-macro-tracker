@@ -151,7 +151,7 @@
 
 <script>
 const charts = {};
-const history = [{"gdate": "2026-07-27", "jdate": "5 مرداد 1405", "us10y": 4.64, "t10yie": 2.26, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.77, "vix": 18.57, "sahm": 0.07, "t10y2y": 0.36, "t10y2ym": 0.36, "realRate": 2.38, "cpffr": 0.18}, {"gdate": "2026-07-28", "jdate": "6 مرداد 1405", "us10y": 4.61, "t10yie": 2.21, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.79, "vix": 18.68, "sahm": 0.07, "t10y2y": 0.34, "t10y2ym": 0.36, "realRate": 2.4, "cpffr": 0.18}, {"gdate": "2026-07-29", "jdate": "7 مرداد 1405", "us10y": 4.63, "t10yie": 2.2, "dfii10": 2.44, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.86, "hyoas": 2.84, "vix": 19.33, "sahm": 0.07, "t10y2y": 0.35, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.23}, {"gdate": "2026-07-30", "jdate": "8 مرداد 1405", "us10y": 4.7, "t10yie": 2.27, "dfii10": 2.41, "dltiit": 2.91, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.76, "hyoas": 2.84, "vix": 19.73, "sahm": 0.07, "t10y2y": 0.45, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.13}, {"gdate": "2026-07-31", "jdate": "9 مرداد 1405", "us10y": 4.72, "t10yie": 2.28, "dfii10": 2.41, "dltiit": 2.97, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.88, "hyoas": 2.84, "vix": 16.0, "sahm": 0.07, "t10y2y": 0.47, "t10y2ym": 0.36, "realRate": 2.44, "cpffr": 0.25}, {"gdate": "2026-08-01", "jdate": "10 مرداد 1405", "us10y": 4.65, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.71, "vix": 14.89, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.4, "cpffr": 0.2}, {"gdate": "2026-08-10", "jdate": "۱۹ مرداد ۱۴۰۵", "us10y": 4.69, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.7, "vix": 14.9, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.44, "cpffr": 0.2}];
+const history = [{"gdate": "2026-07-27", "jdate": "5 مرداد 1405", "us10y": 4.64, "t10yie": 2.26, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.77, "vix": 18.57, "sahm": 0.07, "t10y2y": 0.36, "t10y2ym": 0.36, "realRate": 2.38, "cpffr": 0.18}, {"gdate": "2026-07-28", "jdate": "6 مرداد 1405", "us10y": 4.61, "t10yie": 2.21, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.79, "vix": 18.68, "sahm": 0.07, "t10y2y": 0.34, "t10y2ym": 0.36, "realRate": 2.4, "cpffr": 0.18}, {"gdate": "2026-07-29", "jdate": "7 مرداد 1405", "us10y": 4.63, "t10yie": 2.2, "dfii10": 2.44, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.86, "hyoas": 2.84, "vix": 19.33, "sahm": 0.07, "t10y2y": 0.35, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.23}, {"gdate": "2026-07-30", "jdate": "8 مرداد 1405", "us10y": 4.7, "t10yie": 2.27, "dfii10": 2.41, "dltiit": 2.91, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.76, "hyoas": 2.84, "vix": 19.73, "sahm": 0.07, "t10y2y": 0.45, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.13}, {"gdate": "2026-07-31", "jdate": "9 مرداد 1405", "us10y": 4.72, "t10yie": 2.28, "dfii10": 2.41, "dltiit": 2.97, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.88, "hyoas": 2.84, "vix": 16.0, "sahm": 0.07, "t10y2y": 0.47, "t10y2ym": 0.36, "realRate": 2.44, "cpffr": 0.25}, {"gdate": "2026-08-01", "jdate": "10 مرداد 1405", "us10y": 4.65, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.71, "vix": 14.89, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.4, "cpffr": 0.2}, {"gdate": "2026-08-10", "jdate": "۱۹ مرداد ۱۴۰۵", "us10y": 4.69, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.7, "vix": 14.9, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.44, "cpffr": 0.2}, {"gdate": "2026-08-11", "jdate": "۲۰ مرداد ۱۴۰۵", "us10y": 4.65, "t10yie": 2.29, "dfii10": 2.4, "dltiit": 2.94, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.84, "hyoas": 2.7, "vix": 14.9, "sahm": -0.03, "t10y2y": 0.47, "t10y2ym": 0.38, "realRate": 2.36, "cpffr": 0.21, "ma": {"us10y": {"ma7": 4.68, "ma30": 4.59, "ma60": 4.55, "ma180": 4.33}, "t10yie": {"ma7": 2.26, "ma30": 2.25, "ma60": 2.3, "ma180": 2.31}, "dfii10": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.01}, "dltiit": {"ma7": 2.96, "ma30": 2.86, "ma60": 2.77, "ma180": 2.61}, "iorb": {"ma7": 3.65, "ma30": 3.65, "ma60": 3.65, "ma180": 3.65}, "effr": {"ma7": 3.63, "ma30": 3.63, "ma60": 3.63, "ma180": 3.65}, "cprate": {"ma7": 3.83, "ma30": 3.79, "ma60": 3.76, "ma180": 3.8}, "hyoas": {"ma7": 2.77, "ma30": 2.74, "ma60": 2.74, "ma180": 2.86}, "vix": {"ma7": 15.9, "ma30": 16.85, "ma60": 17.22, "ma180": 18.46}, "sahm": {"ma7": 0.15, "ma30": 0.3, "ma60": 0.14, "ma180": 0.35}, "t10y2y": {"ma7": 0.45, "ma30": 0.39, "ma60": 0.4, "ma180": 0.53}, "t10y2ym": {"ma7": 0.52, "ma30": 0.25, "ma60": 0.08, "ma180": 0.8}, "realRate": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.01}, "cpffr": {"ma7": 0.2, "ma30": 0.17, "ma60": 0.13, "ma180": 0.03}}}];
 
 function avg(arr){ return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
 function maOf(field, n){
@@ -237,7 +237,11 @@ function renderMainTable(last, prev){
     }
     const cur = last[r.key];
     const y = prev ? prev[r.key] : null;
-    const ma7 = maOf(r.key,7), ma30 = maOf(r.key,30), ma60 = maOf(r.key,60), maAll = maOf(r.key,history.length);
+    const maData = last.ma && last.ma[r.key];
+    const ma7 = maData ? maData.ma7 : maOf(r.key,7);
+    const ma30 = maData ? maData.ma30 : maOf(r.key,30);
+    const ma60 = maData ? maData.ma60 : maOf(r.key,60);
+    const maAll = maData ? maData.ma180 : maOf(r.key,history.length);
     const st = statusFor(r.key, cur);
     html += '<tr><td class="mono">'+(i+1)+'</td><td class="name">'+r.label+'</td><td class="mono">'+fmt(cur)+'</td><td class="mono">'+fmt(y)+'</td><td class="mono">'+fmt(ma7)+'</td><td class="mono">'+fmt(ma30)+'</td><td class="mono">'+fmt(ma60)+'</td><td class="mono">'+fmt(maAll)+'</td><td>'+statusPill(st)+'</td></tr>';
   });
@@ -295,10 +299,10 @@ function renderOutlookTable(last, prev){
     '<tr><td class="name">بورس آمریکا</td><td>'+(vixUp?'ریسک بالاتر':'نوسان معمول')+'</td><td>مثبت اما با نوسان</td></tr>' +
     '<tr><td class="name">کریپتو</td><td>'+(realUp||vixUp?'نوسانی، فشار نرخ واقعی':'نسبتا پایدار')+'</td><td>صعود ملایم پس از نوسان</td></tr>' +
     '<tr><td class="name">تورم انتظاری</td><td>'+((prev && last.t10yie>prev.t10yie)?'رو به افزایش':'ثابت نسبی')+'</td><td>نیازمند پایش</td></tr>';
- }
+}
 function renderAnalysisTable(last, prev){
   const recessionSignal = last.sahm>=0.5 || last.t10y2y<0;
-  const liqTrend = prev ? (last.cpffr>prev.cpffr?'سخت‌تر شده':(last.cpffr<prev.cpffr?'بهتر شده':'بدون تغییر')) : '-';
+const liqTrend = prev ? (last.cpffr>prev.cpffr?'سخت‌تر شده':(last.cpffr<prev.cpffr?'بهتر شده':'بدون تغییر')) : '-';
   const vixTrend = prev ? (last.vix>prev.vix?'در حال افزایش':'در حال کاهش/ثابت') : '-';
   document.getElementById('analysisTable').innerHTML =
     '<tr><th>مؤلفه</th><th>وضعیت</th><th>نتیجه‌گیری</th></tr>' +
@@ -343,8 +347,11 @@ function ds(label, data, color){ return {label:label, data:data, borderColor:col
 function renderCharts(){
   Object.keys(charts).forEach(destroyChart);
   const last = todayEntry(), prev = yestEntry();
-  const ma30 = function(f){ return maOf(f,30); };
-  const maAll = function(f){ return maOf(f,history.length); };
+  function maGet(field, which, fallbackN){
+    return (last.ma && last.ma[field]) ? last.ma[field][which] : maOf(field, fallbackN);
+  }
+  const ma30 = function(f){ return maGet(f,'ma30',30); };
+  const maAll = function(f){ return maGet(f,'ma180',history.length); };
   charts.d1 = new Chart(document.getElementById('d1'), { type:'bar', data:{ labels:['US10Y','T10YIE','Real\nRate','DFII10','DLTIIT'],
     datasets:[
       {label:'Today', data:['us10y','t10yie','realRate','dfii10','dltiit'].map(function(f){return last[f];}), backgroundColor:palette.today, borderRadius:5},
@@ -359,10 +366,10 @@ function renderCharts(){
     ]}, options: barOptions(true)});
   const cats = ['Today','Yest.','MA-7','MA-30','MA-All'];
   charts.d3 = new Chart(document.getElementById('d3'), { type:'bar', data:{ labels:cats, datasets:[{
-    data:[last.cpffr, prev?prev.cpffr:null, maOf('cpffr',7), maOf('cpffr',30), maOf('cpffr',history.length)],
+    data:[last.cpffr, prev?prev.cpffr:null, maGet('cpffr','ma7',7), maGet('cpffr','ma30',30), maGet('cpffr','ma180',history.length)],
     backgroundColor:[palette.today, palette.yesterday, palette.ma7, palette.ma30, palette.ma180], borderRadius:6 }]}, options: barOptions(false)});
   charts.d4 = new Chart(document.getElementById('d4'), { type:'bar', data:{ labels:cats, datasets:[{
-    data:[last.hyoas, prev?prev.hyoas:null, maOf('hyoas',7), maOf('hyoas',30), maOf('hyoas',history.length)],
+    data:[last.hyoas, prev?prev.hyoas:null, maGet('hyoas','ma7',7), maGet('hyoas','ma30',30), maGet('hyoas','ma180',history.length)],
     backgroundColor:[palette.today, palette.yesterday, palette.ma7, palette.ma30, palette.ma180], borderRadius:6 }]}, options: barOptions(false)});
   charts.d5 = new Chart(document.getElementById('d5'), { type:'bar', data:{ labels:['Today','Yesterday'], datasets:[{
     data:[last.vix, prev?prev.vix:null], backgroundColor:[palette.today, palette.yesterday], borderRadius:6, barPercentage:0.5 }]}, options: barOptions(false)});
@@ -397,4 +404,4 @@ function renderCharts(){
 renderAll();
 </script>
 </body>
-</html> 
+</html>    
