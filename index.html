@@ -141,8 +141,6 @@
       <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="t6"></canvas></div></div>
     </div>
 
-    <div class="section-header"><h2>تاریخچهٔ کامل روزها</h2></div>
-    <div class="card table-scroll"><table dir="ltr" id="historyTable"></table></div>
   </div>
 
   <div id="emptyState" class="empty-note">داده‌ای هنوز دریافت نشده - اولین اجرای خودکار به‌زودی انجام می‌شود.</div>
@@ -151,7 +149,7 @@
 
 <script>
 const charts = {};
-const history = [{"gdate": "2026-07-27", "jdate": "5 مرداد 1405", "us10y": 4.64, "t10yie": 2.26, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.77, "vix": 18.57, "sahm": 0.07, "t10y2y": 0.36, "t10y2ym": 0.36, "realRate": 2.38, "cpffr": 0.18}, {"gdate": "2026-07-28", "jdate": "6 مرداد 1405", "us10y": 4.61, "t10yie": 2.21, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.79, "vix": 18.68, "sahm": 0.07, "t10y2y": 0.34, "t10y2ym": 0.36, "realRate": 2.4, "cpffr": 0.18}, {"gdate": "2026-07-29", "jdate": "7 مرداد 1405", "us10y": 4.63, "t10yie": 2.2, "dfii10": 2.44, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.86, "hyoas": 2.84, "vix": 19.33, "sahm": 0.07, "t10y2y": 0.35, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.23}, {"gdate": "2026-07-30", "jdate": "8 مرداد 1405", "us10y": 4.7, "t10yie": 2.27, "dfii10": 2.41, "dltiit": 2.91, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.76, "hyoas": 2.84, "vix": 19.73, "sahm": 0.07, "t10y2y": 0.45, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.13}, {"gdate": "2026-07-31", "jdate": "9 مرداد 1405", "us10y": 4.72, "t10yie": 2.28, "dfii10": 2.41, "dltiit": 2.97, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.88, "hyoas": 2.84, "vix": 16.0, "sahm": 0.07, "t10y2y": 0.47, "t10y2ym": 0.36, "realRate": 2.44, "cpffr": 0.25}, {"gdate": "2026-08-01", "jdate": "10 مرداد 1405", "us10y": 4.65, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.71, "vix": 14.89, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.4, "cpffr": 0.2}, {"gdate": "2026-08-10", "jdate": "۱۹ مرداد ۱۴۰۵", "us10y": 4.69, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.7, "vix": 14.9, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.44, "cpffr": 0.2}, {"gdate": "2026-08-11", "jdate": "۲۰ مرداد ۱۴۰۵", "us10y": 4.65, "t10yie": 2.29, "dfii10": 2.4, "dltiit": 2.94, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.9, "hyoas": 2.7, "vix": 15.46, "sahm": -0.03, "t10y2y": 0.47, "t10y2ym": 0.38, "realRate": 2.36, "cpffr": 0.27, "ma": {"us10y": {"ma7": 4.68, "ma30": 4.59, "ma60": 4.55, "ma180": 4.33}, "t10yie": {"ma7": 2.26, "ma30": 2.25, "ma60": 2.3, "ma180": 2.31}, "dfii10": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.01}, "dltiit": {"ma7": 2.96, "ma30": 2.86, "ma60": 2.77, "ma180": 2.61}, "iorb": {"ma7": 3.65, "ma30": 3.65, "ma60": 3.65, "ma180": 3.65}, "effr": {"ma7": 3.63, "ma30": 3.63, "ma60": 3.63, "ma180": 3.65}, "cprate": {"ma7": 3.85, "ma30": 3.8, "ma60": 3.77, "ma180": 3.8}, "hyoas": {"ma7": 2.75, "ma30": 2.74, "ma60": 2.74, "ma180": 2.86}, "vix": {"ma7": 15.67, "ma30": 16.77, "ma60": 17.18, "ma180": 18.45}, "sahm": {"ma7": 0.15, "ma30": 0.3, "ma60": 0.14, "ma180": 0.35}, "t10y2y": {"ma7": 0.45, "ma30": 0.39, "ma60": 0.4, "ma180": 0.53}, "t10y2ym": {"ma7": 0.52, "ma30": 0.25, "ma60": 0.08, "ma180": 0.8}, "realRate": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.01}, "cpffr": {"ma7": 0.22, "ma30": 0.17, "ma60": 0.13, "ma180": 0.03}}}];
+const history = [{"gdate": "2026-07-27", "jdate": "5 مرداد 1405", "us10y": 4.64, "t10yie": 2.26, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.77, "vix": 18.57, "sahm": 0.07, "t10y2y": 0.36, "t10y2ym": 0.36, "realRate": 2.38, "cpffr": 0.18}, {"gdate": "2026-07-28", "jdate": "6 مرداد 1405", "us10y": 4.61, "t10yie": 2.21, "dfii10": 2.43, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.81, "hyoas": 2.79, "vix": 18.68, "sahm": 0.07, "t10y2y": 0.34, "t10y2ym": 0.36, "realRate": 2.4, "cpffr": 0.18}, {"gdate": "2026-07-29", "jdate": "7 مرداد 1405", "us10y": 4.63, "t10yie": 2.2, "dfii10": 2.44, "dltiit": 2.95, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.86, "hyoas": 2.84, "vix": 19.33, "sahm": 0.07, "t10y2y": 0.35, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.23}, {"gdate": "2026-07-30", "jdate": "8 مرداد 1405", "us10y": 4.7, "t10yie": 2.27, "dfii10": 2.41, "dltiit": 2.91, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.76, "hyoas": 2.84, "vix": 19.73, "sahm": 0.07, "t10y2y": 0.45, "t10y2ym": 0.36, "realRate": 2.43, "cpffr": 0.13}, {"gdate": "2026-07-31", "jdate": "9 مرداد 1405", "us10y": 4.72, "t10yie": 2.28, "dfii10": 2.41, "dltiit": 2.97, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.88, "hyoas": 2.84, "vix": 16.0, "sahm": 0.07, "t10y2y": 0.47, "t10y2ym": 0.36, "realRate": 2.44, "cpffr": 0.25}, {"gdate": "2026-08-01", "jdate": "10 مرداد 1405", "us10y": 4.65, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.71, "vix": 14.89, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.4, "cpffr": 0.2}, {"gdate": "2026-08-10", "jdate": "۱۹ مرداد ۱۴۰۵", "us10y": 4.69, "t10yie": 2.25, "dfii10": 2.43, "dltiit": 2.96, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.83, "hyoas": 2.7, "vix": 14.9, "sahm": -0.03, "t10y2y": 0.46, "t10y2ym": 0.38, "realRate": 2.44, "cpffr": 0.2}, {"gdate": "2026-08-11", "jdate": "۲۰ مرداد ۱۴۰۵", "us10y": 4.65, "t10yie": 2.29, "dfii10": 2.4, "dltiit": 2.94, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.9, "hyoas": 2.7, "vix": 15.46, "sahm": -0.03, "t10y2y": 0.47, "t10y2ym": 0.38, "realRate": 2.36, "cpffr": 0.27, "ma": {"us10y": {"ma7": 4.68, "ma30": 4.59, "ma60": 4.55, "ma180": 4.33}, "t10yie": {"ma7": 2.26, "ma30": 2.25, "ma60": 2.3, "ma180": 2.31}, "dfii10": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.01}, "dltiit": {"ma7": 2.96, "ma30": 2.86, "ma60": 2.77, "ma180": 2.61}, "iorb": {"ma7": 3.65, "ma30": 3.65, "ma60": 3.65, "ma180": 3.65}, "effr": {"ma7": 3.63, "ma30": 3.63, "ma60": 3.63, "ma180": 3.65}, "cprate": {"ma7": 3.85, "ma30": 3.8, "ma60": 3.77, "ma180": 3.8}, "hyoas": {"ma7": 2.75, "ma30": 2.74, "ma60": 2.74, "ma180": 2.86}, "vix": {"ma7": 15.67, "ma30": 16.77, "ma60": 17.18, "ma180": 18.45}, "sahm": {"ma7": 0.15, "ma30": 0.3, "ma60": 0.14, "ma180": 0.35}, "t10y2y": {"ma7": 0.45, "ma30": 0.39, "ma60": 0.4, "ma180": 0.53}, "t10y2ym": {"ma7": 0.52, "ma30": 0.25, "ma60": 0.08, "ma180": 0.8}, "realRate": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.01}, "cpffr": {"ma7": 0.22, "ma30": 0.17, "ma60": 0.13, "ma180": 0.03}}}, {"gdate": "2026-08-12", "jdate": "۲۱ مرداد ۱۴۰۵", "us10y": 4.72, "t10yie": 2.27, "dfii10": 2.43, "dltiit": 2.98, "ffr": "3.50-3.75", "iorb": 3.65, "effr": 3.63, "cprate": 3.9, "hyoas": 2.7, "vix": 15.46, "sahm": -0.03, "t10y2y": 0.48, "t10y2ym": 0.38, "realRate": 2.45, "cpffr": 0.27, "ma": {"us10y": {"ma7": 4.68, "ma30": 4.6, "ma60": 4.55, "ma180": 4.33}, "t10yie": {"ma7": 2.26, "ma30": 2.25, "ma60": 2.29, "ma180": 2.31}, "dfii10": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.02}, "dltiit": {"ma7": 2.96, "ma30": 2.87, "ma60": 2.78, "ma180": 2.61}, "iorb": {"ma7": 3.65, "ma30": 3.65, "ma60": 3.65, "ma180": 3.65}, "effr": {"ma7": 3.63, "ma30": 3.63, "ma60": 3.63, "ma180": 3.65}, "cprate": {"ma7": 3.85, "ma30": 3.8, "ma60": 3.77, "ma180": 3.8}, "hyoas": {"ma7": 2.75, "ma30": 2.74, "ma60": 2.74, "ma180": 2.86}, "vix": {"ma7": 15.67, "ma30": 16.77, "ma60": 17.18, "ma180": 18.45}, "sahm": {"ma7": 0.15, "ma30": 0.3, "ma60": 0.14, "ma180": 0.35}, "t10y2y": {"ma7": 0.45, "ma30": 0.39, "ma60": 0.4, "ma180": 0.53}, "t10y2ym": {"ma7": 0.52, "ma30": 0.25, "ma60": 0.08, "ma180": 0.8}, "realRate": {"ma7": 2.42, "ma30": 2.35, "ma60": 2.25, "ma180": 2.02}, "cpffr": {"ma7": 0.22, "ma30": 0.17, "ma60": 0.13, "ma180": 0.03}}}];
 
 function avg(arr){ return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
 function maOf(field, n){
@@ -224,7 +222,6 @@ function renderAll(){
   renderOutlookTable(last, prev);
   renderAnalysisTable(last, prev);
   renderReminderTable();
-  renderHistoryTable();
   renderCharts();
 }
 
@@ -302,7 +299,7 @@ function renderOutlookTable(last, prev){
 }
 function renderAnalysisTable(last, prev){
   const recessionSignal = last.sahm>=0.5 || last.t10y2y<0;
-const liqTrend = prev ? (last.cpffr>prev.cpffr?'سخت‌تر شده':(last.cpffr<prev.cpffr?'بهتر شده':'بدون تغییر')) : '-';
+  const liqTrend = prev ? (last.cpffr>prev.cpffr?'سخت‌تر شده':(last.cpffr<prev.cpffr?'بهتر شده':'بدون تغییر')) : '-';
   const vixTrend = prev ? (last.vix>prev.vix?'در حال افزایش':'در حال کاهش/ثابت') : '-';
   document.getElementById('analysisTable').innerHTML =
     '<tr><th>مؤلفه</th><th>وضعیت</th><th>نتیجه‌گیری</th></tr>' +
@@ -319,13 +316,6 @@ function renderReminderTable(){
     '<tr><td class="name">CPFFR</td><td>(همان فرمول)</td><td>پایین</td><td>نقدینگی بهتر می‌شود</td><td>شرکت‌ها راحت‌تر و ارزان‌تر پول می‌گیرند، بانک‌ها ریسک کمتری می‌بینند</td><td>جریان نقد بهبود می‌یابد</td></tr>' +
     '<tr><td class="name">HY OAS</td><td>فاصلهٔ بازده High Yield از خزانه‌داری</td><td>پایین</td><td>ریسک کمتر (به نفع شرکت‌ها)</td><td>اعتماد بیشتر، شرکت‌های ضعیف‌تر راحت‌تر پول می‌گیرند، بازار بدهی سالم</td><td>سهام/کریپتو حمایت می‌گیرند</td></tr>' +
     '<tr><td class="name">HY OAS</td><td>(همان تعریف)</td><td>بالاتر</td><td>ریسک بیشتر (به ضرر شرکت‌ها)</td><td>نگرانی ورشکستگی، هزینهٔ تامین مالی بالا می‌رود، ریسک سیستماتیک افزایش</td><td>فشار روی سهام، کریپتو، طلا؛ دلار قوی‌تر</td></tr>';
-}
-function renderHistoryTable(){
-  let html = '<tr><th>#</th><th>تاریخ</th><th>US10Y</th><th>Real Rate</th><th>CPFFR</th><th>HY OAS</th><th>VIX</th><th>T10Y2Y</th></tr>';
-  history.forEach(function(e,i){
-    html += '<tr><td class="mono">'+(i+1)+'</td><td class="mono">'+e.jdate+'</td><td class="mono">'+e.us10y+'</td><td class="mono">'+e.realRate+'</td><td class="mono">'+e.cpffr+'</td><td class="mono">'+e.hyoas+'</td><td class="mono">'+e.vix+'</td><td class="mono">'+e.t10y2y+'</td></tr>';
-  });
-  document.getElementById('historyTable').innerHTML = html;
 }
 const palette = { today:'#5b8def', yesterday:'#8891a3', ma7:'#3ecfb5', ma30:'#e8a33d', ma60:'#c084fc', ma180:'#e8604c' };
 const linePalette = { blue:'#5b8def', teal:'#3ecfb5', amber:'#e8a33d', red:'#e8604c', purple:'#c084fc' };
@@ -404,4 +394,4 @@ function renderCharts(){
 renderAll();
 </script>
 </body>
-</html>    
+</html>
