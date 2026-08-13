@@ -9,34 +9,73 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root{
-    --bg:#0a0d12; --panel:#12161f; --panel-border:#1f2530; --grid:#232a38;
-    --text:#e7ebf3; --muted:#8891a3;
-    --amber:#e8a33d; --teal:#3ecfb5; --red:#e8604c; --blue:#5b8def; --purple:#c084fc;
+    --bg-0:#05070b; --bg-1:#0a0e16; --bg-2:#0d1220;
+    --glass:rgba(16,21,33,0.56); --glass-hi:rgba(24,30,46,0.62);
+    --border:rgba(255,255,255,0.08); --border-hi:rgba(255,255,255,0.14);
+    --text:#eef1f7; --muted:#8b93a8; --muted-2:#5f6779;
+    --gold:#d4af6a; --emerald:#34d399; --crimson:#f0665a; --azure:#6fa8f5; --violet:#b58af0;
     --mono:'IBM Plex Mono', monospace; --fa:'Vazirmatn', sans-serif;
+    --glow-emerald: rgba(52,211,153,0.16); --glow-azure: rgba(111,168,245,0.14); --glow-gold: rgba(212,175,106,0.12);
   }
   *{box-sizing:border-box;}
+  html{background:var(--bg-0);}
   body{
     margin:0; min-height:100vh;
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(91,141,239,0.08), transparent 60%),
-      radial-gradient(1000px 500px at 100% 0%, rgba(62,207,181,0.06), transparent 60%),
-      var(--bg);
+      radial-gradient(900px 500px at 10% -8%, var(--glow-azure), transparent 62%),
+      radial-gradient(800px 460px at 100% 0%, var(--glow-emerald), transparent 60%),
+      radial-gradient(700px 420px at 50% 110%, var(--glow-gold), transparent 65%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-0) 40%, var(--bg-0));
     color:var(--text); font-family:var(--fa);
     padding:26px 18px 70px;
   }
   .wrap{max-width:1180px;margin:0 auto;}
   a{color:inherit;}
+
+  .glass{
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    backdrop-filter:blur(18px) saturate(140%);
+    border:1px solid var(--border);
+    box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 12px 34px -18px rgba(0,0,0,0.65);
+  }
+
+  .hero{
+    position:relative; overflow:hidden; border-radius:20px; margin-bottom:22px;
+    padding:26px 26px 20px;
+  }
+  .hero::before{
+    content:''; position:absolute; inset:0; z-index:0;
+    background:linear-gradient(135deg, rgba(111,168,245,0.10), rgba(52,211,153,0.06) 45%, transparent 75%);
+  }
+  .candle-strip{ position:absolute; inset:0; z-index:0; opacity:0.5; }
+  .hero-content{ position:relative; z-index:1; }
+
   .top-header{
     display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;
-    border-bottom:1px solid var(--panel-border); padding-bottom:18px; margin-bottom:22px;
   }
-  .eyebrow{font-family:var(--mono); letter-spacing:.12em; font-size:11px; color:var(--teal); text-transform:uppercase; margin-bottom:6px;}
-  h1{margin:0; font-size:26px; font-weight:800;}
-  .date-line{font-family:var(--mono); color:var(--muted); font-size:12.5px; margin-top:6px;}
-  .tag{font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--panel-border); background:#151b26; padding:7px 12px; border-radius:10px;}
-  .section-header{display:flex; justify-content:space-between; align-items:center; margin:34px 0 14px;}
-  .section-header h2{font-size:18px; margin:0; font-weight:800;}
-  .card{background:var(--panel); border:1px solid var(--panel-border); border-radius:14px; padding:18px;}
+  .eyebrow{
+    font-family:var(--mono); letter-spacing:.16em; font-size:10.5px; color:var(--emerald);
+    text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--emerald); box-shadow:0 0 10px var(--emerald); }
+  h1{margin:0; font-size:27px; font-weight:800; letter-spacing:-0.01em;
+     background:linear-gradient(90deg, #fff, #c9d4e8 70%);
+     -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .date-line{font-family:var(--mono); color:var(--muted); font-size:12.5px; margin-top:7px;}
+  .tag{
+    font-family:var(--mono); font-size:11px; color:var(--muted);
+    border:1px solid var(--border); background:rgba(255,255,255,0.03);
+    padding:7px 14px; border-radius:99px;
+  }
+
+  .section-header{display:flex; justify-content:space-between; align-items:center; margin:36px 0 14px;}
+  .section-header h2{font-size:17px; margin:0; font-weight:800; display:flex; align-items:center; gap:9px;}
+  .section-header h2::before{ content:''; width:3px; height:16px; border-radius:2px;
+    background:linear-gradient(180deg, var(--azure), var(--emerald)); display:inline-block; }
+
+  .card{ border-radius:16px; padding:19px; }
+  .card:hover{ border-color:var(--border-hi); }
   .grid2{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px;}
   @media (max-width:820px){ .grid2{grid-template-columns:1fr;} }
   .form-grid{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px;}
@@ -44,83 +83,108 @@
   @media (max-width:480px){ .form-grid{grid-template-columns:1fr;} }
   label{display:block; font-size:11.5px; color:var(--muted); margin-bottom:5px; font-family:var(--mono);}
   input{
-    width:100%; background:#0d1119; border:1px solid var(--panel-border); border-radius:8px;
+    width:100%; background:rgba(5,7,11,0.7); border:1px solid var(--border); border-radius:9px;
     padding:9px 10px; color:var(--text); font-family:var(--mono); font-size:13px;
   }
-  input:focus{outline:none; border-color:var(--blue);}
+  input:focus{outline:none; border-color:var(--azure);}
   .btn{
-    margin-top:16px; background:var(--blue); color:#08101f; border:none; border-radius:10px;
+    margin-top:16px; background:linear-gradient(135deg, var(--azure), #4d7bd8); color:#08101f; border:none; border-radius:11px;
     padding:12px 22px; font-family:var(--fa); font-weight:700; font-size:14px; cursor:pointer;
+    box-shadow:0 8px 22px -10px rgba(111,168,245,0.55);
   }
-  .btn:hover{opacity:.9;}
-  .btn.secondary{background:#151b26; color:var(--muted); border:1px solid var(--panel-border);}
-  .btn.danger{background:#2a1418; color:var(--red); border:1px solid rgba(232,96,76,.35);}
+  .btn:hover{filter:brightness(1.08);}
+  .btn.secondary{background:rgba(255,255,255,0.04); color:var(--muted); border:1px solid var(--border); box-shadow:none;}
+  .btn.danger{background:rgba(240,102,90,0.12); color:var(--crimson); border:1px solid rgba(240,102,90,.3); box-shadow:none;}
+
   table{width:100%; border-collapse:collapse; font-size:12.5px;}
-  th, td{padding:8px 10px; text-align:center; border-bottom:1px solid var(--panel-border); white-space:nowrap;}
-  th{color:var(--muted); font-family:var(--mono); font-weight:600; font-size:11px;}
+  th, td{padding:10px 10px; text-align:center; border-bottom:1px solid var(--border); white-space:nowrap;}
+  th{color:var(--muted); font-family:var(--mono); font-weight:600; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase;}
+  tbody tr{transition:background .15s;}
+  tbody tr:hover{background:rgba(255,255,255,0.025);}
   td.name{text-align:right; font-weight:600; white-space:normal;}
   td.mono{font-family:var(--mono);}
-  .status{font-family:var(--mono); font-size:10.5px; padding:3px 8px; border-radius:99px; display:inline-block;}
-  .st-warn{color:var(--amber); border:1px solid rgba(232,163,61,.35);}
-  .st-neutral{color:var(--muted); border:1px solid var(--panel-border);}
-  .st-good{color:var(--teal); border:1px solid rgba(62,207,181,.35);}
-  .st-elev{color:var(--red); border:1px solid rgba(232,96,76,.35);}
-  .up{color:var(--red);} .down{color:var(--teal);} .flat{color:var(--muted);}
+  .status{font-family:var(--mono); font-size:10.5px; padding:4px 10px; border-radius:99px; display:inline-block; letter-spacing:.02em;}
+  .st-warn{color:var(--gold); border:1px solid rgba(212,175,106,.32); background:rgba(212,175,106,0.06);}
+  .st-neutral{color:var(--muted); border:1px solid var(--border);}
+  .st-good{color:var(--emerald); border:1px solid rgba(52,211,153,.32); background:rgba(52,211,153,0.06);}
+  .st-elev{color:var(--crimson); border:1px solid rgba(240,102,90,.32); background:rgba(240,102,90,0.06);}
+  .up{color:var(--crimson); font-weight:600;} .down{color:var(--emerald); font-weight:600;} .flat{color:var(--muted);}
+
   .table-scroll{overflow-x:auto;}
   canvas{max-height:230px;}
   .chart-box{position:relative; height:230px; width:100%;}
-  .legend-key{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:14px; font-family:var(--mono); font-size:11px; color:var(--muted);}
+  .legend-key{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:16px; font-family:var(--mono); font-size:11px; color:var(--muted);}
   .legend-key span{display:flex; align-items:center; gap:6px;}
-  .dot{width:9px; height:9px; border-radius:2px; display:inline-block;}
+  .dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
   .empty-note{color:var(--muted); font-size:13px; text-align:center; padding:30px 10px;}
-  .footer-note{margin-top:34px; font-family:var(--mono); font-size:11px; color:var(--muted); text-align:center;}
+  .footer-note{margin-top:38px; font-family:var(--mono); font-size:10.5px; color:var(--muted-2); text-align:center; letter-spacing:.03em;}
   .row-actions{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
   .note{font-size:11.5px; color:var(--muted); margin-top:10px; line-height:1.8;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top-header">
+  <div class="hero glass">
+    <svg class="candle-strip" viewBox="0 0 1180 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="60" y1="30" x2="60" y2="130" stroke="#34d399" stroke-width="1.5"/><rect x="52" y="55" width="16" height="45" fill="#34d399"/>
+      <line x1="100" y1="45" x2="100" y2="110" stroke="#f0665a" stroke-width="1.5"/><rect x="92" y="55" width="16" height="35" fill="#f0665a"/>
+      <line x1="140" y1="20" x2="140" y2="120" stroke="#34d399" stroke-width="1.5"/><rect x="132" y="40" width="16" height="55" fill="#34d399"/>
+      <line x1="180" y1="50" x2="180" y2="115" stroke="#34d399" stroke-width="1.5"/><rect x="172" y="65" width="16" height="30" fill="#34d399"/>
+      <line x1="220" y1="35" x2="220" y2="125" stroke="#f0665a" stroke-width="1.5"/><rect x="212" y="45" width="16" height="50" fill="#f0665a"/>
+      <line x1="260" y1="25" x2="260" y2="100" stroke="#34d399" stroke-width="1.5"/><rect x="252" y="35" width="16" height="40" fill="#34d399"/>
+      <path d="M40,95 L100,78 L140,70 L180,82 L220,60 L260,50 L320,42" stroke="#6fa8f5" stroke-width="1.5" fill="none" opacity="0.55"/>
+      <line x1="900" y1="40" x2="900" y2="120" stroke="#34d399" stroke-width="1.5"/><rect x="892" y="55" width="16" height="45" fill="#34d399"/>
+      <line x1="940" y1="55" x2="940" y2="115" stroke="#f0665a" stroke-width="1.5"/><rect x="932" y="65" width="16" height="30" fill="#f0665a"/>
+      <line x1="980" y1="30" x2="980" y2="110" stroke="#34d399" stroke-width="1.5"/><rect x="972" y="45" width="16" height="45" fill="#34d399"/>
+      <line x1="1020" y1="45" x2="1020" y2="130" stroke="#34d399" stroke-width="1.5"/><rect x="1012" y="60" width="16" height="50" fill="#34d399"/>
+      <line x1="1060" y1="25" x2="1060" y2="100" stroke="#f0665a" stroke-width="1.5"/><rect x="1052" y="35" width="16" height="35" fill="#f0665a"/>
+      <line x1="1100" y1="40" x2="1100" y2="115" stroke="#34d399" stroke-width="1.5"/><rect x="1092" y="55" width="16" height="40" fill="#34d399"/>
+      <path d="M860,90 L920,75 L960,68 L1000,80 L1040,55 L1080,48 L1140,38" stroke="#d4af6a" stroke-width="1.5" fill="none" opacity="0.5"/>
+    </svg>
+    <div class="hero-content">
+    <div class="top-header">
     <div>
       <div class="eyebrow">Daily Macro Tracker App</div>
       <h1>ردیاب روزانهٔ 15 شاخص کلان</h1>
       <div class="date-line" id="latestDateLine">در حال بارگذاری...</div>
     </div>
     <div class="tag" id="dayCountTag">-</div>
+    </div>
+    </div>
   </div>
 
     <div id="app-body" style="display:none;">
     <div class="section-header"><h2>جدول اصلی</h2><span class="tag" id="mainTableTag"></span></div>
-    <div class="card table-scroll"><table dir="ltr" id="mainTable"></table></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="mainTable"></table></div>
 
     <div class="section-header"><h2>تغییرات نسبت به دیروز</h2></div>
-    <div class="card table-scroll"><table dir="ltr" id="changeTable"></table></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="changeTable"></table></div>
 
     <div class="grid2" style="margin-top:20px;">
-      <div class="card"><h2 style="font-size:15px;margin:0 0 12px;">Sahm Rule و Yield Curve</h2><table dir="ltr" id="sahmTable"></table></div>
-      <div class="card"><h2 style="font-size:15px;margin:0 0 12px;">تحلیل VIX</h2><table dir="ltr" id="vixTable"></table></div>
+      <div class="card glass"><h2 style="font-size:15px;margin:0 0 12px;">Sahm Rule و Yield Curve</h2><table dir="ltr" id="sahmTable"></table></div>
+      <div class="card glass"><h2 style="font-size:15px;margin:0 0 12px;">تحلیل VIX</h2><table dir="ltr" id="vixTable"></table></div>
     </div>
 
     <div class="section-header"><h2>جدول جامع تاثیرات جهانی</h2></div>
-    <div class="card table-scroll"><table dir="ltr" id="globalTable"></table></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="globalTable"></table></div>
 
     <div class="section-header"><h2>جمع‌بندی کوتاه‌مدت و بلندمدت</h2></div>
-    <div class="card table-scroll"><table dir="ltr" id="outlookTable"></table></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="outlookTable"></table></div>
 
     <div class="section-header"><h2>تحلیل حرفه‌ای جامع روز</h2></div>
-    <div class="card table-scroll"><table dir="ltr" id="analysisTable"></table></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="analysisTable"></table></div>
 
     <div class="section-header"><h2>یادآوری ثابت - CPFFR و HY OAS</h2></div>
-    <div class="card table-scroll"><table dir="ltr" id="reminderTable"></table></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="reminderTable"></table></div>
 
     <div class="section-header"><h2>داشبورد امروز</h2></div>
     <div class="grid2">
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="d1"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="d2"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="d3"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="d1"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="d2"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="d3"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
+<div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
     </div>
     <div class="legend-key">
       <span><i class="dot" style="background:#5b8def"></i>Today</span>
@@ -133,12 +197,12 @@
 
     <div class="section-header"><h2>روند خطی تاریخی</h2></div>
     <div class="grid2">
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="t1"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="t2"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="t3"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="t4"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="t5"></canvas></div></div>
-      <div class="card"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="t6"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="t1"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="t2"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="t3"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="t4"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="t5"></canvas></div></div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="t6"></canvas></div></div>
     </div>
 
   </div>
