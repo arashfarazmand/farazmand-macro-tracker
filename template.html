@@ -10,10 +10,10 @@
 <style>
   :root{
     --bg-0:#05070b; --bg-1:#0a0e16; --bg-2:#0d1220;
-    --glass:rgba(16,21,33,0.56); --glass-hi:rgba(24,30,46,0.62);
+    --glass:rgba(10,9,6,0.80); --glass-hi:rgba(16,14,9,0.85);
     --border:rgba(255,255,255,0.08); --border-hi:rgba(255,255,255,0.14);
     --text:#eef1f7; --muted:#8b93a8; --muted-2:#5f6779;
-    --gold:#d4af6a; --emerald:#34d399; --crimson:#f0665a; --azure:#6fa8f5; --violet:#b58af0;
+    --gold:#d4af6a; --emerald:#34a853; --crimson:#c45a50; --azure:#d4af6a; --violet:#b58af0;
     --mono:'IBM Plex Mono', monospace; --fa:'Vazirmatn', sans-serif;
     --glow-emerald: rgba(52,211,153,0.16); --glow-azure: rgba(111,168,245,0.14); --glow-gold: rgba(212,175,106,0.12);
   }
@@ -21,11 +21,12 @@
   html{background:var(--bg-0);}
   body{
     margin:0; min-height:100vh;
-    background:
-      radial-gradient(900px 500px at 10% -8%, var(--glow-azure), transparent 62%),
-      radial-gradient(800px 460px at 100% 0%, var(--glow-emerald), transparent 60%),
-      radial-gradient(700px 420px at 50% 110%, var(--glow-gold), transparent 65%),
-      linear-gradient(180deg, var(--bg-1), var(--bg-0) 40%, var(--bg-0));
+    background-image: url("bg.svg");
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover;
+    background-attachment: fixed;
+    background-color: #06050a;
     color:var(--text); font-family:var(--fa);
     padding:26px 18px 70px;
   }
@@ -184,8 +185,8 @@
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="d3"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
-<div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
-    </div>
+      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
+      </div>
     <div class="legend-key">
       <span><i class="dot" style="background:#5b8def"></i>Today</span>
       <span><i class="dot" style="background:#8891a3"></i>Yesterday</span>
