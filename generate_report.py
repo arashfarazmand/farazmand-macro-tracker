@@ -29,6 +29,15 @@ MA_KEYS = ["us10y", "t10yie", "dfii10", "dltiit", "iorb", "effr",
 
 HISTORY_PATH = "data/history.json"
 
+CALENDAR_SERIES = [
+    {"key": "nfp",     "name": "NFP (تغییر اشتغال غیرکشاورزی)", "series_id": "PAYEMS", "kind": "mom_diff", "unit": "هزار نفر"},
+    {"key": "unrate",  "name": "نرخ بیکاری",                     "series_id": "UNRATE", "kind": "level",    "unit": "%"},
+    {"key": "cpi_yoy", "name": "CPI (تورم سالانه)",               "series_id": "CPIAUCSL", "kind": "yoy",    "unit": "%"},
+    {"key": "ppi_yoy", "name": "PPI (تورم تولیدکننده سالانه)",    "series_id": "PPIACO", "kind": "yoy",      "unit": "%"},
+    {"key": "retail",  "name": "خرده‌فروشی (ماهانه)",            "series_id": "RSXFS",  "kind": "mom_pct",  "unit": "%"},
+    {"key": "pce_yoy", "name": "PCE (تورم مصرفی سالانه)",        "series_id": "PCEPI",  "kind": "yoy",      "unit": "%"},
+]
+
 
 def fetch_series(series_id, limit=250):
     """Fetch the most recent `limit` observations, ascending by date, missing values dropped."""
@@ -78,11 +87,63 @@ def gregorian_to_jalali_label(gdate_str):
     return f"{day_fa} {months[jd.month - 1]} {year_fa}"
 
 
+def month_label(gdate_str):
+    y, m, _ = gdate_str.split("-")
+    months_en = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    return f"{months_en[int(m)-1]} {y}"
+
+
+def build_calendar():
+    calendar = []
+    for spec in CALENDAR_SERIES:
+        obs = fetch_series(spec["series_id"], limit=30)
+        if len(obs) < 13:
+            continue
+        entry = {"name": spec["name"], "unit": spec["unit"]}
+        if spec["kind"] == "level":
+            latest_date, latest_val = obs[-1]
+            prev_date, prev_val = obs[-2]
+            entry["period"] = month_label(latest_date)
+            entry["previous"] = round(prev_val, 2)
+            entry["actual"] = round(latest_val, 2)
+        elif spec["kind"] == "mom_diff":
+            latest_date, latest_val = obs[-1]
+            prev_date, prev_val = obs[-2]
+            prev2_date, prev2_val = obs[-3]
+            entry["period"] = month_label(latest_date)
+            entry["previous"] = round(prev_val - prev2_val, 1)
+            entry["actual"] = round(latest_val - prev_val, 1)
+        elif spec["kind"] == "mom_pct":
+            latest_date, latest_val = obs[-1]
+            prev_date, prev_val = obs[-2]
+            prev2_date, prev2_val = obs[-3]
+            entry["period"] = month_label(latest_date)
+            entry["previous"] = round((prev_val - prev2_val) / prev2_val * 100, 2)
+            entry["actual"] = round((latest_val - prev_val) / prev_val * 100, 2)
+        elif spec["kind"] == "yoy":
+            latest_date, latest_val = obs[-1]
+            prev_date, prev_val = obs[-2]
+            def yoy_at(idx):
+                target_date = obs[idx][0]
+                y, m, d = target_date.split("-")
+                target_prev_year = f"{int(y)-1}-{m}-{d}"
+                match = [v for dt, v in obs if dt == target_prev_year]
+                if not match:
+                    match = [v for dt, v in obs if dt[:7] == f"{int(y)-1}-{m}"]
+                if not match:
+                    return None
+                return round((obs[idx][1] - match[0]) / match[0] * 100, 2)
+            entry["period"] = month_label(latest_date)
+            entry["actual"] = yoy_at(len(obs) - 1)
+            entry["previous"] = yoy_at(len(obs) - 2)
+        calendar.append(entry)
+    return calendar
+
+
 def main():
     if not API_KEY:
         raise SystemExit("FRED_API_KEY environment variable is not set.")
 
-    # Fetch full recent history for every base series (used for real moving averages)
     histories = {}
     for key, series_id in SERIES.items():
         histories[key] = fetch_series(series_id)
@@ -118,7 +179,6 @@ def main():
     entry["realRate"] = round(entry["us10y"] - entry["t10yie"], 2) if entry["us10y"] is not None and entry["t10yie"] is not None else None
     entry["cpffr"] = round(entry["cprate"] - entry["effr"], 2) if entry["cprate"] is not None and entry["effr"] is not None else None
 
-    # ---- Real moving averages, computed from full FRED history (not just our daily log) ----
     ma = {}
     for key in MA_KEYS:
         vals = [v for _, v in histories[key]]
@@ -164,16 +224,20 @@ def main():
 
     save_history(history)
 
+    calendar = build_calendar()
+
     with open("template.html", "r", encoding="utf-8") as f:
         template = f.read()
 
     history_json = json.dumps(history, ensure_ascii=False)
+    calendar_json = json.dumps(calendar, ensure_ascii=False)
     output = template.replace("__HISTORY_JSON__", history_json)
+    output = output.replace("__CALENDAR_JSON__", calendar_json)
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
 
-    print(f"index.html generated with {len(history)} days of history and real moving averages.")
+    print(f"index.html generated with {len(history)} days of history, {len(calendar)} calendar rows.")
 
 
 if __name__ == "__main__":
