@@ -178,6 +178,10 @@
     <div class="section-header"><h2>یادآوری ثابت - CPFFR و HY OAS</h2></div>
     <div class="card glass table-scroll"><table dir="ltr" id="reminderTable"></table></div>
 
+    <div class="section-header"><h2>تقویم اقتصادی آمریکا</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="calendarTable"></table></div>
+    <div class="note" style="padding:0 4px;">تاریخ‌ها بر اساس دوره‌ٔ داده (ماه/فصل مربوطه) است، نه لزوماً روز دقیق اعلام رسمی. عدد پیش‌بینی بازار (Forecast) منبع رایگان و رسمی ندارد و در این جدول نیامده.</div>
+
     <div class="section-header"><h2>داشبورد امروز</h2></div>
     <div class="grid2">
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="d1"></canvas></div></div>
@@ -186,7 +190,7 @@
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
-      </div>
+     </div>
     <div class="legend-key">
       <span><i class="dot" style="background:#5b8def"></i>Today</span>
       <span><i class="dot" style="background:#8891a3"></i>Yesterday</span>
@@ -215,6 +219,7 @@
 <script>
 const charts = {};
 const history = __HISTORY_JSON__;
+const calendar = __CALENDAR_JSON__;
 
 function avg(arr){ return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
 function maOf(field, n){
@@ -287,6 +292,7 @@ function renderAll(){
   renderOutlookTable(last, prev);
   renderAnalysisTable(last, prev);
   renderReminderTable();
+  renderCalendarTable();
   renderCharts();
 }
 
@@ -353,7 +359,7 @@ function renderGlobalTable(last, prev){
 function renderOutlookTable(last, prev){
   const realUp = prev && last.realRate > prev.realRate;
   const vixUp = prev && last.vix > prev.vix;
-  document.getElementById('outlookTable').innerHTML =
+ document.getElementById('outlookTable').innerHTML =
     '<tr><th>بازار</th><th>کوتاه‌مدت (1-7 روز)</th><th>بلندمدت (1-3 ماه)</th></tr>' +
     '<tr><td class="name">طلا</td><td>'+(realUp||vixUp?'فشار بیشتر':'نسبتا پایدار')+'</td><td>تحت فشار نرخ واقعی</td></tr>' +
     '<tr><td class="name">دلار</td><td>'+(vixUp?'قوی‌تر (safe-haven)':'پایدار')+'</td><td>قوی</td></tr>' +
@@ -381,6 +387,23 @@ function renderReminderTable(){
     '<tr><td class="name">CPFFR</td><td>(همان فرمول)</td><td>پایین</td><td>نقدینگی بهتر می‌شود</td><td>شرکت‌ها راحت‌تر و ارزان‌تر پول می‌گیرند، بانک‌ها ریسک کمتری می‌بینند</td><td>جریان نقد بهبود می‌یابد</td></tr>' +
     '<tr><td class="name">HY OAS</td><td>فاصلهٔ بازده High Yield از خزانه‌داری</td><td>پایین</td><td>ریسک کمتر (به نفع شرکت‌ها)</td><td>اعتماد بیشتر، شرکت‌های ضعیف‌تر راحت‌تر پول می‌گیرند، بازار بدهی سالم</td><td>سهام/کریپتو حمایت می‌گیرند</td></tr>' +
     '<tr><td class="name">HY OAS</td><td>(همان تعریف)</td><td>بالاتر</td><td>ریسک بیشتر (به ضرر شرکت‌ها)</td><td>نگرانی ورشکستگی، هزینهٔ تامین مالی بالا می‌رود، ریسک سیستماتیک افزایش</td><td>فشار روی سهام، کریپتو، طلا؛ دلار قوی‌تر</td></tr>';
+}
+function renderCalendarTable(){
+  if(!calendar || !calendar.length){
+    document.getElementById('calendarTable').innerHTML = '<tr><td style="padding:14px;color:var(--muted);">داده‌ای در دسترس نیست</td></tr>';
+    return;
+  }
+  let html = '<tr><th>شاخص</th><th>دوره</th><th>عدد قبلی</th><th>عدد فعلی (قطعی)</th><th>واحد</th></tr>';
+  calendar.forEach(function(c){
+    const prevStr = (c.previous===null||c.previous===undefined) ? '-' : c.previous;
+    const actStr = (c.actual===null||c.actual===undefined) ? '-' : c.actual;
+    let cls = 'flat';
+    if(c.previous!==null && c.actual!==null && c.previous!==undefined && c.actual!==undefined){
+      cls = c.actual > c.previous ? 'up' : (c.actual < c.previous ? 'down' : 'flat');
+    }
+    html += '<tr><td class="name">'+c.name+'</td><td class="mono">'+c.period+'</td><td class="mono">'+prevStr+'</td><td class="mono '+cls+'">'+actStr+'</td><td class="mono">'+c.unit+'</td></tr>';
+  });
+  document.getElementById('calendarTable').innerHTML = html;
 }
 const palette = { today:'#5b8def', yesterday:'#8891a3', ma7:'#3ecfb5', ma30:'#e8a33d', ma60:'#c084fc', ma180:'#e8604c' };
 const linePalette = { blue:'#5b8def', teal:'#3ecfb5', amber:'#e8a33d', red:'#e8604c', purple:'#c084fc' };
@@ -459,4 +482,4 @@ function renderCharts(){
 renderAll();
 </script>
 </body>
-</html>
+</html> 
