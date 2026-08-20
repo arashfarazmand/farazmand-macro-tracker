@@ -2,7 +2,8 @@ import os
 import json
 import requests
 import jdatetime
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 API_KEY = os.environ.get("FRED_API_KEY", "")
 BASE = "https://api.stlouisfed.org/fred/series/observations"
@@ -30,13 +31,117 @@ MA_KEYS = ["us10y", "t10yie", "dfii10", "dltiit", "iorb", "effr",
 HISTORY_PATH = "data/history.json"
 
 CALENDAR_SERIES = [
-    {"key": "nfp",     "name": "NFP (تغییر اشتغال غیرکشاورزی)", "series_id": "PAYEMS", "kind": "mom_diff", "unit": "هزار نفر"},
-    {"key": "unrate",  "name": "نرخ بیکاری",                     "series_id": "UNRATE", "kind": "level",    "unit": "%"},
-    {"key": "cpi_yoy", "name": "CPI (تورم سالانه)",               "series_id": "CPIAUCSL", "kind": "yoy",    "unit": "%"},
-    {"key": "ppi_yoy", "name": "PPI (تورم تولیدکننده سالانه)",    "series_id": "PPIACO", "kind": "yoy",      "unit": "%"},
-    {"key": "retail",  "name": "خرده‌فروشی (ماهانه)",            "series_id": "RSXFS",  "kind": "mom_pct",  "unit": "%"},
-    {"key": "pce_yoy", "name": "PCE (تورم مصرفی سالانه)",        "series_id": "PCEPI",  "kind": "yoy",      "unit": "%"},
+    {"key": "nfp",     "name": "NFP (تغییر اشتغال غیرکشاورزی)", "series_id": "PAYEMS",   "kind": "mom_diff", "unit": "هزار نفر"},
+    {"key": "unrate",  "name": "نرخ بیکاری",                     "series_id": "UNRATE",   "kind": "level",    "unit": "%"},
+    {"key": "cpi_yoy", "name": "CPI (تورم سالانه)",               "series_id": "CPIAUCSL", "kind": "yoy",      "unit": "%"},
+    {"key": "ppi_yoy", "name": "PPI (تورم تولیدکننده سالانه)",    "series_id": "PPIACO",   "kind": "yoy",      "unit": "%"},
+    {"key": "retail",  "name": "خرده‌فروشی (ماهانه)",            "series_id": "RSXFS",    "kind": "mom_pct",  "unit": "%"},
+    {"key": "pce_yoy", "name": "PCE (تورم مصرفی سالانه)",        "series_id": "PCEPI",    "kind": "yoy",      "unit": "%"},
 ]
+
+# ---- Upcoming release-date calendar ----
+ET = ZoneInfo("America/New_York")
+IRAN = ZoneInfo("Asia/Tehran")
+
+FOMC_DATES_2026 = [
+    "2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17",
+    "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09",
+]
+
+WEEKDAY_FA = ["دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "یکشنبه"]
+MONTHS_FA = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+             "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"]
+FA_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+
+RELEASE_RULES = {
+    "nfp": ("first_friday",),
+    "unrate": ("first_friday",),
+    "cpi_yoy": ("day_of_month", 13),
+    "ppi_yoy": ("day_of_month", 16),
+    "retail": ("day_of_month", 15),
+    "pce_yoy": ("last_business_day",),
+}
+
+
+def _fa_num(n):
+    return str(n).translate(FA_DIGITS)
+
+
+def _jalali_dt_label(dt_iran):
+    jd = jdatetime.date.fromgregorian(date=dt_iran.date())
+    wd = WEEKDAY_FA[dt_iran.weekday()]
+    return f"{wd} {_fa_num(jd.day)} {MONTHS_FA[jd.month - 1]} {_fa_num(jd.year)} - ساعت {dt_iran.strftime('%H:%M')}"
+
+
+def _first_friday(year, month):
+    d = datetime(year, month, 1)
+    offset = (4 - d.weekday()) % 7
+    return d + timedelta(days=offset)
+
+
+def _nth_day(year, month, day):
+    return datetime(year, month, min(day, 28))
+
+
+def _last_business_day(year, month):
+    if month == 12:
+        nxt = datetime(year + 1, 1, 1)
+    else:
+        nxt = datetime(year, month + 1, 1)
+    d = nxt - timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d
+
+
+def _candidates_for_rule(rule, today):
+    out = []
+    for add_month in (0, 1, 2):
+        y, m = today.year, today.month + add_month
+        while m > 12:
+            m -= 12
+            y += 1
+        if rule[0] == "first_friday":
+            out.append(_first_friday(y, m))
+        elif rule[0] == "day_of_month":
+            out.append(_nth_day(y, m, rule[1]))
+        elif rule[0] == "last_business_day":
+            out.append(_last_business_day(y, m))
+    return out
+
+
+def next_release_within(key, today, window_days=30):
+    rule = RELEASE_RULES.get(key)
+    if not rule:
+        return None
+    candidates = _candidates_for_rule(rule, today)
+    horizon = today.date() + timedelta(days=window_days)
+    future = [c for c in candidates if today.date() <= c.date() <= horizon]
+    if not future:
+        return None
+    chosen = min(future)
+    dt_et = chosen.replace(hour=8, minute=30, tzinfo=ET)
+    dt_iran = dt_et.astimezone(IRAN)
+    return _jalali_dt_label(dt_iran)
+
+
+def build_fomc_upcoming(today, window_days=30):
+    out = []
+    horizon = today.date() + timedelta(days=window_days)
+    for ds in FOMC_DATES_2026:
+        d = datetime.strptime(ds, "%Y-%m-%d").date()
+        if today.date() <= d <= horizon:
+            dt_et = datetime(d.year, d.month, d.day, 14, 0, tzinfo=ET)
+            dt_iran = dt_et.astimezone(IRAN)
+            out.append({
+                "name": "تصمیم نرخ بهره FOMC",
+                "period": "-",
+                "previous": None,
+                "actual": None,
+                "unit": "",
+                "release": _jalali_dt_label(dt_iran),
+            })
+    return out
 
 
 def fetch_series(series_id, limit=250):
@@ -79,12 +184,9 @@ def save_history(history):
 def gregorian_to_jalali_label(gdate_str):
     y, m, d = [int(x) for x in gdate_str.split("-")]
     jd = jdatetime.date.fromgregorian(date=date(y, m, d))
-    months = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-              "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"]
-    fa_digits = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
-    day_fa = str(jd.day).translate(fa_digits)
-    year_fa = str(jd.year).translate(fa_digits)
-    return f"{day_fa} {months[jd.month - 1]} {year_fa}"
+    day_fa = _fa_num(jd.day)
+    year_fa = _fa_num(jd.year)
+    return f"{day_fa} {MONTHS_FA[jd.month - 1]} {year_fa}"
 
 
 def month_label(gdate_str):
@@ -94,7 +196,9 @@ def month_label(gdate_str):
 
 
 def build_calendar():
+    today = datetime.now(ET)
     calendar = []
+
     for spec in CALENDAR_SERIES:
         obs = fetch_series(spec["series_id"], limit=30)
         if len(obs) < 13:
@@ -122,7 +226,7 @@ def build_calendar():
             entry["actual"] = round((latest_val - prev_val) / prev_val * 100, 2)
         elif spec["kind"] == "yoy":
             latest_date, latest_val = obs[-1]
-            prev_date, prev_val = obs[-2]
+
             def yoy_at(idx):
                 target_date = obs[idx][0]
                 y, m, d = target_date.split("-")
@@ -133,10 +237,15 @@ def build_calendar():
                 if not match:
                     return None
                 return round((obs[idx][1] - match[0]) / match[0] * 100, 2)
+
             entry["period"] = month_label(latest_date)
             entry["actual"] = yoy_at(len(obs) - 1)
             entry["previous"] = yoy_at(len(obs) - 2)
+
+        entry["release"] = next_release_within(spec["key"], today) or "-"
         calendar.append(entry)
+
+    calendar.extend(build_fomc_upcoming(today))
     return calendar
 
 
