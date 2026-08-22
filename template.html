@@ -180,7 +180,7 @@
 
     <div class="section-header"><h2>تقویم اقتصادی آمریکا</h2></div>
     <div class="card glass table-scroll"><table dir="ltr" id="calendarTable"></table></div>
-    <div class="note" style="padding:0 4px;">تاریخ‌ها بر اساس دوره‌ٔ داده (ماه/فصل مربوطه) است، نه لزوماً روز دقیق اعلام رسمی. عدد پیش‌بینی بازار (Forecast) منبع رایگان و رسمی ندارد و در این جدول نیامده.</div>
+    <div class="note" style="padding:0 4px;">ستون «تاریخ اعلام بعدی» تا ۳۰ روز آینده و به وقت ایران محاسبه می‌شود؛ تاریخ FOMC دقیق و رسمی است، بقیهٔ شاخص‌ها بر اساس الگوی معمول ماهانهٔ انتشارشان تقریبی‌اند و ممکن است ۱-۲ روز جابه‌جا شوند. عدد پیش‌بینی بازار (Forecast) منبع رایگان و رسمی ندارد و در این جدول نیامده.</div>
 
     <div class="section-header"><h2>داشبورد امروز</h2></div>
     <div class="grid2">
@@ -190,7 +190,7 @@
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
-     </div>
+      </div>
     <div class="legend-key">
       <span><i class="dot" style="background:#5b8def"></i>Today</span>
       <span><i class="dot" style="background:#8891a3"></i>Yesterday</span>
@@ -359,7 +359,7 @@ function renderGlobalTable(last, prev){
 function renderOutlookTable(last, prev){
   const realUp = prev && last.realRate > prev.realRate;
   const vixUp = prev && last.vix > prev.vix;
- document.getElementById('outlookTable').innerHTML =
+  document.getElementById('outlookTable').innerHTML =
     '<tr><th>بازار</th><th>کوتاه‌مدت (1-7 روز)</th><th>بلندمدت (1-3 ماه)</th></tr>' +
     '<tr><td class="name">طلا</td><td>'+(realUp||vixUp?'فشار بیشتر':'نسبتا پایدار')+'</td><td>تحت فشار نرخ واقعی</td></tr>' +
     '<tr><td class="name">دلار</td><td>'+(vixUp?'قوی‌تر (safe-haven)':'پایدار')+'</td><td>قوی</td></tr>' +
@@ -393,7 +393,7 @@ function renderCalendarTable(){
     document.getElementById('calendarTable').innerHTML = '<tr><td style="padding:14px;color:var(--muted);">داده‌ای در دسترس نیست</td></tr>';
     return;
   }
-  let html = '<tr><th>شاخص</th><th>دوره</th><th>عدد قبلی</th><th>عدد فعلی (قطعی)</th><th>واحد</th></tr>';
+  let html = '<tr><th>شاخص</th><th>دوره</th><th>عدد قبلی</th><th>عدد فعلی (قطعی)</th><th>واحد</th><th>تاریخ اعلام بعدی (به وقت ایران)</th></tr>';
   calendar.forEach(function(c){
     const prevStr = (c.previous===null||c.previous===undefined) ? '-' : c.previous;
     const actStr = (c.actual===null||c.actual===undefined) ? '-' : c.actual;
@@ -401,7 +401,7 @@ function renderCalendarTable(){
     if(c.previous!==null && c.actual!==null && c.previous!==undefined && c.actual!==undefined){
       cls = c.actual > c.previous ? 'up' : (c.actual < c.previous ? 'down' : 'flat');
     }
-    html += '<tr><td class="name">'+c.name+'</td><td class="mono">'+c.period+'</td><td class="mono">'+prevStr+'</td><td class="mono '+cls+'">'+actStr+'</td><td class="mono">'+c.unit+'</td></tr>';
+    html += '<tr><td class="name">'+c.name+'</td><td class="mono">'+c.period+'</td><td class="mono">'+prevStr+'</td><td class="mono '+cls+'">'+actStr+'</td><td class="mono">'+c.unit+'</td><td class="mono" style="white-space:normal;">'+(c.release||'-')+'</td></tr>';
   });
   document.getElementById('calendarTable').innerHTML = html;
 }
@@ -482,4 +482,5 @@ function renderCharts(){
 renderAll();
 </script>
 </body>
-</html> 
+</html>
+    
