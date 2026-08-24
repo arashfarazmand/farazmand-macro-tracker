@@ -10,6 +10,7 @@ BASE = "https://api.stlouisfed.org/fred/series/observations"
 
 SERIES = {
     "us10y": "DGS10",
+    "us2y": "DGS2",
     "t10yie": "T10YIE",
     "dfii10": "DFII10",
     "dltiit": "DLTIIT",
@@ -39,7 +40,6 @@ CALENDAR_SERIES = [
     {"key": "pce_yoy", "name": "PCE (تورم مصرفی سالانه)",        "series_id": "PCEPI",    "kind": "yoy",      "unit": "%"},
 ]
 
-# ---- Upcoming release-date calendar ----
 ET = ZoneInfo("America/New_York")
 IRAN = ZoneInfo("Asia/Tehran")
 
@@ -142,6 +142,44 @@ def build_fomc_upcoming(today, window_days=30):
                 "release": _jalali_dt_label(dt_iran),
             })
     return out
+
+
+NAVASAN_API_KEY = os.environ.get("NAVASAN_API_KEY", "")
+NAVASAN_BASE = "http://api.navasan.tech/latest/"
+
+
+def fetch_navasan():
+    """Fetch latest Iran market rates from Navasan. Returns {} if no key or on failure."""
+    if not NAVASAN_API_KEY:
+        return {}
+    try:
+        r = requests.get(NAVASAN_BASE, params={"api_key": NAVASAN_API_KEY}, timeout=20)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        print(f"Navasan fetch failed: {e}")
+        return {}
+
+
+def build_markets(us10y, us2y, navasan_data):
+    def nv(key):
+        item = navasan_data.get(key)
+        if not item:
+            return None
+        try:
+            return float(str(item.get("value")).replace(",", ""))
+        except (TypeError, ValueError):
+            return None
+
+    return {
+        "us10y": us10y,
+        "us2y": us2y,
+        "goldOunce": nv("usd_xau"),
+        "irUsdFree": nv("usd_sell"),
+        "irGold18k": nv("18ayar"),
+        "irGold18kBubble": nv("bub_18ayar"),
+        "navasanAvailable": bool(navasan_data),
+    }
 
 
 def fetch_series(series_id, limit=250):
@@ -335,18 +373,23 @@ def main():
 
     calendar = build_calendar()
 
+    navasan_data = fetch_navasan()
+    markets = build_markets(values["us10y"], values.get("us2y"), navasan_data)
+
     with open("template.html", "r", encoding="utf-8") as f:
         template = f.read()
 
     history_json = json.dumps(history, ensure_ascii=False)
     calendar_json = json.dumps(calendar, ensure_ascii=False)
+    markets_json = json.dumps(markets, ensure_ascii=False)
     output = template.replace("__HISTORY_JSON__", history_json)
     output = output.replace("__CALENDAR_JSON__", calendar_json)
+    output = output.replace("__MARKETS_JSON__", markets_json)
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
 
-    print(f"index.html generated with {len(history)} days of history, {len(calendar)} calendar rows.")
+    print(f"index.html generated with {len(history)} days of history, {len(calendar)} calendar rows, navasan={'ok' if navasan_data else 'skipped'}.")
 
 
 if __name__ == "__main__":
