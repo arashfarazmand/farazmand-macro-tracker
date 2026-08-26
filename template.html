@@ -182,6 +182,10 @@
     <div class="card glass table-scroll"><table dir="ltr" id="calendarTable"></table></div>
     <div class="note" style="padding:0 4px;">ستون «تاریخ اعلام بعدی» تا ۳۰ روز آینده و به وقت ایران محاسبه می‌شود؛ تاریخ FOMC دقیق و رسمی است، بقیهٔ شاخص‌ها بر اساس الگوی معمول ماهانهٔ انتشارشان تقریبی‌اند و ممکن است ۱-۲ روز جابه‌جا شوند. عدد پیش‌بینی بازار (Forecast) منبع رایگان و رسمی ندارد و در این جدول نیامده.</div>
 
+    <div class="section-header"><h2>بازارهای جهانی و داخلی</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="marketsTable"></table></div>
+    <div class="note" id="marketsNote" style="padding:0 4px;"></div>
+
     <div class="section-header"><h2>داشبورد امروز</h2></div>
     <div class="grid2">
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="d1"></canvas></div></div>
@@ -190,13 +194,13 @@
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
-      </div>
+    </div>
     <div class="legend-key">
       <span><i class="dot" style="background:#5b8def"></i>Today</span>
       <span><i class="dot" style="background:#8891a3"></i>Yesterday</span>
       <span><i class="dot" style="background:#3ecfb5"></i>MA-7</span>
       <span><i class="dot" style="background:#e8a33d"></i>MA-30</span>
-      <span><i class="dot" style="background:#c084fc"></i>MA-60</span>
+     <span><i class="dot" style="background:#c084fc"></i>MA-60</span>
       <span><i class="dot" style="background:#e8604c"></i>MA-All</span>
     </div>
 
@@ -220,6 +224,7 @@
 const charts = {};
 const history = __HISTORY_JSON__;
 const calendar = __CALENDAR_JSON__;
+const markets = __MARKETS_JSON__;
 
 function avg(arr){ return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
 function maOf(field, n){
@@ -293,6 +298,7 @@ function renderAll(){
   renderAnalysisTable(last, prev);
   renderReminderTable();
   renderCalendarTable();
+  renderMarketsTable();
   renderCharts();
 }
 
@@ -367,7 +373,7 @@ function renderOutlookTable(last, prev){
     '<tr><td class="name">بورس آمریکا</td><td>'+(vixUp?'ریسک بالاتر':'نوسان معمول')+'</td><td>مثبت اما با نوسان</td></tr>' +
     '<tr><td class="name">کریپتو</td><td>'+(realUp||vixUp?'نوسانی، فشار نرخ واقعی':'نسبتا پایدار')+'</td><td>صعود ملایم پس از نوسان</td></tr>' +
     '<tr><td class="name">تورم انتظاری</td><td>'+((prev && last.t10yie>prev.t10yie)?'رو به افزایش':'ثابت نسبی')+'</td><td>نیازمند پایش</td></tr>';
-}
+  }
 function renderAnalysisTable(last, prev){
   const recessionSignal = last.sahm>=0.5 || last.t10y2y<0;
   const liqTrend = prev ? (last.cpffr>prev.cpffr?'سخت‌تر شده':(last.cpffr<prev.cpffr?'بهتر شده':'بدون تغییر')) : '-';
@@ -404,6 +410,32 @@ function renderCalendarTable(){
     html += '<tr><td class="name">'+c.name+'</td><td class="mono">'+c.period+'</td><td class="mono">'+prevStr+'</td><td class="mono '+cls+'">'+actStr+'</td><td class="mono">'+c.unit+'</td><td class="mono" style="white-space:normal;">'+(c.release||'-')+'</td></tr>';
   });
   document.getElementById('calendarTable').innerHTML = html;
+}
+function fmt2(v){ return (v===null||v===undefined||isNaN(v)) ? '-' : (+v).toLocaleString('en-US', {maximumFractionDigits:2}); }
+function renderMarketsTable(){
+  if(!markets){
+    document.getElementById('marketsTable').innerHTML = '<tr><td style="padding:14px;color:var(--muted);">داده‌ای در دسترس نیست</td></tr>';
+    return;
+  }
+  const rows = [
+    ['نرخ بهره ۱۰ ساله آمریکا (US10Y)', fmt2(markets.us10y), '%'],
+    ['نرخ بهره ۲ ساله آمریکا (US2Y)', fmt2(markets.us2y), '%'],
+    ['انس جهانی طلا (Gold Ounce)', fmt2(markets.goldOunce), 'دلار'],
+    ['نرخ دلار آزاد ایران', fmt2(markets.irUsdFree), 'تومان'],
+    ['طلای ۱۸ عیار ایران (هر گرم)', fmt2(markets.irGold18k), 'تومان'],
+    ['حباب طلای ۱۸ عیار', fmt2(markets.irGold18kBubble), '%'],
+  ];
+  let html = '<tr><th>شاخص</th><th>مقدار</th><th>واحد</th></tr>';
+  rows.forEach(function(r){
+    html += '<tr><td class="name">'+r[0]+'</td><td class="mono">'+r[1]+'</td><td class="mono">'+r[2]+'</td></tr>';
+  });
+  document.getElementById('marketsTable').innerHTML = html;
+  const note = document.getElementById('marketsNote');
+  if(markets.navasanAvailable){
+    note.textContent = 'نرخ‌های ایران (دلار آزاد، طلای ۱۸ عیار، حباب) از سرویس Navasan.net دریافت می‌شوند و ممکن است با تأخیر چند دقیقه‌ای همراه باشند.';
+  } else {
+    note.textContent = 'کلید Navasan هنوز تنظیم نشده یا سرویس در دسترس نبود - نرخ‌های ایران فعلاً خالی‌اند. نرخ‌های ۱۰/۲ ساله آمریکا از FRED همیشه در دسترس‌اند.';
+  }
 }
 const palette = { today:'#5b8def', yesterday:'#8891a3', ma7:'#3ecfb5', ma30:'#e8a33d', ma60:'#c084fc', ma180:'#e8604c' };
 const linePalette = { blue:'#5b8def', teal:'#3ecfb5', amber:'#e8a33d', red:'#e8604c', purple:'#c084fc' };
@@ -483,4 +515,4 @@ renderAll();
 </script>
 </body>
 </html>
-    
+  
