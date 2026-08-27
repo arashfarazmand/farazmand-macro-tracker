@@ -29,6 +29,7 @@ jobs:
       - name: Run report generator
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          NAVASAN_API_KEY: ${{ secrets.NAVASAN_API_KEY }}
         run: python generate_report.py
 
       - name: Commit and push changes
