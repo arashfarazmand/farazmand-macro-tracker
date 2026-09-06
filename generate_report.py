@@ -62,6 +62,35 @@ RELEASE_RULES = {
     "pce_yoy": ("last_business_day",),
 }
 
+CURRENCY_MAIN = [
+    ("usd", "دلار آمریکا"), ("usdt", "تتر (Tether)"), ("eur", "یورو"), ("gbp", "پوند انگلیس"),
+    ("aed", "درهم امارات"), ("try", "لیر ترکیه"), ("jpy", "ین ژاپن"), ("aud", "دلار استرالیا"),
+    ("nzd", "دلار نیوزلند"), ("cad", "دلار کانادا"), ("sgd", "دلار سنگاپور"), ("chf", "فرانک سوئیس"),
+    ("pkr", "روپیه پاکستان"), ("azn", "منات آذربایجان"),
+]
+CURRENCY_OTHER = [
+    ("nok", "کرون نروژ"), ("sek", "کرون سوئد"), ("dkk", "کرون دانمارک"), ("kwd", "دینار کویت"),
+    ("omr", "ریال عمان"), ("rub", "روبل روسیه"), ("brl", "رئال برزیل"), ("thb", "بات تایلند"),
+    ("afn", "افغانی"), ("inr", "روپیه هند"), ("cny", "یوان چین"), ("myr", "رینگیت مالزی"), ("gel", "لاری گرجستان"),
+]
+REMITTANCE = [
+    ("usd_shakhs", "حواله دلار (شخصی)"), ("usd_sherkat", "حواله دلار (شرکتی)"), ("eur_hav", "حواله یورو"),
+    ("gbp_hav", "حواله پوند"), ("hav_cad_cheque", "حواله دلار کانادا"), ("aud_hav", "حواله دلار استرالیا"),
+    ("myr_hav", "حواله رینگیت"), ("cny_hav", "حواله یوان"), ("try_hav", "حواله لیر"),
+]
+CRYPTO = [
+    ("btc", "بیت‌کوین"), ("eth", "اتریوم"), ("bnb", "بایننس کوین"), ("usdt", "تتر"), ("doge", "دوج کوین"),
+]
+GOLD_COINS = [
+    ("usd_xau", "انس جهانی طلا (دلار)"), ("18ayar", "طلای ۱۸ عیار (هر گرم)"), ("sekkeh", "سکه طرح امامی"),
+    ("bahar", "سکه بهار آزادی"), ("nim", "نیم سکه"), ("rob", "ربع سکه"),
+    ("abshodeh", "مثقال طلای آب‌شده"), ("gerami", "سکه گرمی"),
+]
+GOLD_BUBBLE = [
+    ("bub_sekkeh", "حباب سکه امامی"), ("bub_bahar", "حباب سکه بهار آزادی"), ("bub_nim", "حباب نیم سکه"),
+    ("bub_rob", "حباب ربع سکه"), ("bub_18ayar", "حباب طلای ۱۸ عیار"), ("bub_gerami", "حباب سکه گرمی"),
+]
+
 
 def _fa_num(n):
     return str(n).translate(FA_DIGITS)
@@ -149,7 +178,6 @@ NAVASAN_BASE = "http://api.navasan.tech/latest/"
 
 
 def fetch_navasan():
-    """Fetch latest Iran market rates from Navasan. Returns {} if no key or on failure."""
     if not NAVASAN_API_KEY:
         return {}
     try:
@@ -162,6 +190,10 @@ def fetch_navasan():
 
 
 def build_markets(us10y, us2y, navasan_data):
+    now_iran = datetime.now(IRAN)
+    jd = jdatetime.date.fromgregorian(date=now_iran.date())
+    last_updated = f"{_fa_num(jd.day)} {MONTHS_FA[jd.month-1]} {_fa_num(jd.year)} - ساعت {now_iran.strftime('%H:%M')}"
+
     def nv(key):
         item = navasan_data.get(key)
         if not item:
@@ -171,19 +203,24 @@ def build_markets(us10y, us2y, navasan_data):
         except (TypeError, ValueError):
             return None
 
+    def build_group(items):
+        return [{"name": label, "value": nv(key)} for key, label in items]
+
     return {
         "us10y": us10y,
         "us2y": us2y,
-        "goldOunce": nv("usd_xau"),
-        "irUsdFree": nv("usd_sell"),
-        "irGold18k": nv("18ayar"),
-        "irGold18kBubble": nv("bub_18ayar"),
         "navasanAvailable": bool(navasan_data),
+        "lastUpdated": last_updated,
+        "currencyMain": build_group(CURRENCY_MAIN),
+        "currencyOther": build_group(CURRENCY_OTHER),
+        "remittance": build_group(REMITTANCE),
+        "crypto": build_group(CRYPTO),
+        "goldCoins": build_group(GOLD_COINS),
+        "goldBubble": build_group(GOLD_BUBBLE),
     }
 
 
 def fetch_series(series_id, limit=250):
-    """Fetch the most recent `limit` observations, ascending by date, missing values dropped."""
     params = {
         "series_id": series_id,
         "api_key": API_KEY,
@@ -222,9 +259,7 @@ def save_history(history):
 def gregorian_to_jalali_label(gdate_str):
     y, m, d = [int(x) for x in gdate_str.split("-")]
     jd = jdatetime.date.fromgregorian(date=date(y, m, d))
-    day_fa = _fa_num(jd.day)
-    year_fa = _fa_num(jd.year)
-    return f"{day_fa} {MONTHS_FA[jd.month - 1]} {year_fa}"
+    return f"{_fa_num(jd.day)} {MONTHS_FA[jd.month - 1]} {_fa_num(jd.year)}"
 
 
 def month_label(gdate_str):
@@ -236,7 +271,6 @@ def month_label(gdate_str):
 def build_calendar():
     today = datetime.now(ET)
     calendar = []
-
     for spec in CALENDAR_SERIES:
         obs = fetch_series(spec["series_id"], limit=30)
         if len(obs) < 13:
@@ -279,10 +313,8 @@ def build_calendar():
             entry["period"] = month_label(latest_date)
             entry["actual"] = yoy_at(len(obs) - 1)
             entry["previous"] = yoy_at(len(obs) - 2)
-
         entry["release"] = next_release_within(spec["key"], today) or "-"
         calendar.append(entry)
-
     calendar.extend(build_fomc_upcoming(today))
     return calendar
 
@@ -302,26 +334,18 @@ def main():
             d = histories[k][-1][0]
             if latest_date is None or d > latest_date:
                 latest_date = d
-
     if latest_date is None:
         raise SystemExit("Could not fetch any data from FRED.")
 
     entry = {
         "gdate": latest_date,
         "jdate": gregorian_to_jalali_label(latest_date),
-        "us10y": values["us10y"],
-        "t10yie": values["t10yie"],
-        "dfii10": values["dfii10"],
+        "us10y": values["us10y"], "t10yie": values["t10yie"], "dfii10": values["dfii10"],
         "dltiit": values["dltiit"],
         "ffr": f'{values["ffr_lower"]:.2f}-{values["ffr_upper"]:.2f}' if values["ffr_lower"] and values["ffr_upper"] else "-",
-        "iorb": values["iorb"],
-        "effr": values["effr"],
-        "cprate": values["cprate"],
-        "hyoas": values["hyoas"],
-        "vix": values["vix"],
-        "sahm": values["sahm"],
-        "t10y2y": values["t10y2y"],
-        "t10y2ym": values["t10y2ym"],
+        "iorb": values["iorb"], "effr": values["effr"], "cprate": values["cprate"],
+        "hyoas": values["hyoas"], "vix": values["vix"], "sahm": values["sahm"],
+        "t10y2y": values["t10y2y"], "t10y2ym": values["t10y2ym"],
     }
     entry["realRate"] = round(entry["us10y"] - entry["t10yie"], 2) if entry["us10y"] is not None and entry["t10yie"] is not None else None
     entry["cpffr"] = round(entry["cprate"] - entry["effr"], 2) if entry["cprate"] is not None and entry["effr"] is not None else None
@@ -329,62 +353,42 @@ def main():
     ma = {}
     for key in MA_KEYS:
         vals = [v for _, v in histories[key]]
-        ma[key] = {
-            "ma7": moving_avg(vals, 7),
-            "ma30": moving_avg(vals, 30),
-            "ma60": moving_avg(vals, 60),
-            "ma180": moving_avg(vals, 180),
-        }
+        ma[key] = {"ma7": moving_avg(vals, 7), "ma30": moving_avg(vals, 30),
+                   "ma60": moving_avg(vals, 60), "ma180": moving_avg(vals, 180)}
 
-    us10y_map = dict(histories["us10y"])
-    t10yie_map = dict(histories["t10yie"])
+    us10y_map = dict(histories["us10y"]); t10yie_map = dict(histories["t10yie"])
     common_dates = sorted(set(us10y_map) & set(t10yie_map))
     rr_vals = [round(us10y_map[d] - t10yie_map[d], 2) for d in common_dates]
-    ma["realRate"] = {
-        "ma7": moving_avg(rr_vals, 7),
-        "ma30": moving_avg(rr_vals, 30),
-        "ma60": moving_avg(rr_vals, 60),
-        "ma180": moving_avg(rr_vals, 180),
-    }
+    ma["realRate"] = {"ma7": moving_avg(rr_vals, 7), "ma30": moving_avg(rr_vals, 30),
+                       "ma60": moving_avg(rr_vals, 60), "ma180": moving_avg(rr_vals, 180)}
 
-    cprate_map = dict(histories["cprate"])
-    effr_map = dict(histories["effr"])
+    cprate_map = dict(histories["cprate"]); effr_map = dict(histories["effr"])
     common2 = sorted(set(cprate_map) & set(effr_map))
     cpffr_vals = [round(cprate_map[d] - effr_map[d], 2) for d in common2]
-    ma["cpffr"] = {
-        "ma7": moving_avg(cpffr_vals, 7),
-        "ma30": moving_avg(cpffr_vals, 30),
-        "ma60": moving_avg(cpffr_vals, 60),
-        "ma180": moving_avg(cpffr_vals, 180),
-    }
+    ma["cpffr"] = {"ma7": moving_avg(cpffr_vals, 7), "ma30": moving_avg(cpffr_vals, 30),
+                    "ma60": moving_avg(cpffr_vals, 60), "ma180": moving_avg(cpffr_vals, 180)}
 
     entry["ma"] = ma
 
     history = load_history()
-
     if history and history[-1]["gdate"] == entry["gdate"]:
         history[-1] = entry
         print(f"Updated existing entry for {entry['gdate']}")
     else:
         history.append(entry)
         print(f"Added new entry for {entry['gdate']}")
-
     save_history(history)
 
     calendar = build_calendar()
-
     navasan_data = fetch_navasan()
     markets = build_markets(values["us10y"], values.get("us2y"), navasan_data)
 
     with open("template.html", "r", encoding="utf-8") as f:
         template = f.read()
 
-    history_json = json.dumps(history, ensure_ascii=False)
-    calendar_json = json.dumps(calendar, ensure_ascii=False)
-    markets_json = json.dumps(markets, ensure_ascii=False)
-    output = template.replace("__HISTORY_JSON__", history_json)
-    output = output.replace("__CALENDAR_JSON__", calendar_json)
-    output = output.replace("__MARKETS_JSON__", markets_json)
+    output = template.replace("__HISTORY_JSON__", json.dumps(history, ensure_ascii=False))
+    output = output.replace("__CALENDAR_JSON__", json.dumps(calendar, ensure_ascii=False))
+    output = output.replace("__MARKETS_JSON__", json.dumps(markets, ensure_ascii=False))
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
