@@ -32,7 +32,6 @@
   }
   .wrap{max-width:1180px;margin:0 auto;}
   a{color:inherit;}
-
   .glass{
     background:var(--glass);
     -webkit-backdrop-filter:blur(18px) saturate(140%);
@@ -40,63 +39,29 @@
     border:1px solid var(--border);
     box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 12px 34px -18px rgba(0,0,0,0.65);
   }
-
-  .hero{
-    position:relative; overflow:hidden; border-radius:20px; margin-bottom:22px;
-    padding:26px 26px 20px;
-  }
-  .hero::before{
-    content:''; position:absolute; inset:0; z-index:0;
-    background:linear-gradient(135deg, rgba(111,168,245,0.10), rgba(52,211,153,0.06) 45%, transparent 75%);
-  }
+  .hero{ position:relative; overflow:hidden; border-radius:20px; margin-bottom:22px; padding:26px 26px 20px; }
+  .hero::before{ content:''; position:absolute; inset:0; z-index:0;
+    background:linear-gradient(135deg, rgba(111,168,245,0.10), rgba(52,211,153,0.06) 45%, transparent 75%); }
   .candle-strip{ position:absolute; inset:0; z-index:0; opacity:0.5; }
   .hero-content{ position:relative; z-index:1; }
-
-  .top-header{
-    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;
-  }
-  .eyebrow{
-    font-family:var(--mono); letter-spacing:.16em; font-size:10.5px; color:var(--emerald);
-    text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:8px;
-  }
+  .top-header{ display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; }
+  .eyebrow{ font-family:var(--mono); letter-spacing:.16em; font-size:10.5px; color:var(--emerald);
+    text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
   .eyebrow::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--emerald); box-shadow:0 0 10px var(--emerald); }
   h1{margin:0; font-size:27px; font-weight:800; letter-spacing:-0.01em;
-     background:linear-gradient(90deg, #fff, #c9d4e8 70%);
-     -webkit-background-clip:text; background-clip:text; color:transparent;}
+     background:linear-gradient(90deg, #fff, #c9d4e8 70%); -webkit-background-clip:text; background-clip:text; color:transparent;}
   .date-line{font-family:var(--mono); color:var(--muted); font-size:12.5px; margin-top:7px;}
-  .tag{
-    font-family:var(--mono); font-size:11px; color:var(--muted);
-    border:1px solid var(--border); background:rgba(255,255,255,0.03);
-    padding:7px 14px; border-radius:99px;
-  }
-
+  .tag{ font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--border);
+    background:rgba(255,255,255,0.03); padding:7px 14px; border-radius:99px; }
   .section-header{display:flex; justify-content:space-between; align-items:center; margin:36px 0 14px;}
   .section-header h2{font-size:17px; margin:0; font-weight:800; display:flex; align-items:center; gap:9px;}
   .section-header h2::before{ content:''; width:3px; height:16px; border-radius:2px;
     background:linear-gradient(180deg, var(--azure), var(--emerald)); display:inline-block; }
-
   .card{ border-radius:16px; padding:19px; }
   .card:hover{ border-color:var(--border-hi); }
   .grid2{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px;}
-  @media (max-width:820px){ .grid2{grid-template-columns:1fr;} }
-  .form-grid{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px;}
-  @media (max-width:820px){ .form-grid{grid-template-columns:repeat(2, minmax(0,1fr));} }
-  @media (max-width:480px){ .form-grid{grid-template-columns:1fr;} }
-  label{display:block; font-size:11.5px; color:var(--muted); margin-bottom:5px; font-family:var(--mono);}
-  input{
-    width:100%; background:rgba(5,7,11,0.7); border:1px solid var(--border); border-radius:9px;
-    padding:9px 10px; color:var(--text); font-family:var(--mono); font-size:13px;
-  }
-  input:focus{outline:none; border-color:var(--azure);}
-  .btn{
-    margin-top:16px; background:linear-gradient(135deg, var(--azure), #4d7bd8); color:#08101f; border:none; border-radius:11px;
-    padding:12px 22px; font-family:var(--fa); font-weight:700; font-size:14px; cursor:pointer;
-    box-shadow:0 8px 22px -10px rgba(111,168,245,0.55);
-  }
-  .btn:hover{filter:brightness(1.08);}
-  .btn.secondary{background:rgba(255,255,255,0.04); color:var(--muted); border:1px solid var(--border); box-shadow:none;}
-  .btn.danger{background:rgba(240,102,90,0.12); color:var(--crimson); border:1px solid rgba(240,102,90,.3); box-shadow:none;}
-
+  .grid3{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px;}
+  @media (max-width:900px){ .grid2{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr;} }
   table{width:100%; border-collapse:collapse; font-size:12.5px;}
   th, td{padding:10px 10px; text-align:center; border-bottom:1px solid var(--border); white-space:nowrap;}
   th{color:var(--muted); font-family:var(--mono); font-weight:600; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase;}
@@ -110,7 +75,6 @@
   .st-good{color:var(--emerald); border:1px solid rgba(52,211,153,.32); background:rgba(52,211,153,0.06);}
   .st-elev{color:var(--crimson); border:1px solid rgba(240,102,90,.32); background:rgba(240,102,90,0.06);}
   .up{color:var(--crimson); font-weight:600;} .down{color:var(--emerald); font-weight:600;} .flat{color:var(--muted);}
-
   .table-scroll{overflow-x:auto;}
   canvas{max-height:230px;}
   .chart-box{position:relative; height:230px; width:100%;}
@@ -119,8 +83,8 @@
   .dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
   .empty-note{color:var(--muted); font-size:13px; text-align:center; padding:30px 10px;}
   .footer-note{margin-top:38px; font-family:var(--mono); font-size:10.5px; color:var(--muted-2); text-align:center; letter-spacing:.03em;}
-  .row-actions{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
   .note{font-size:11.5px; color:var(--muted); margin-top:10px; line-height:1.8;}
+  .subhead{font-size:13.5px; font-weight:700; margin:0 0 10px; color:var(--text);}
 </style>
 </head>
 <body>
@@ -130,17 +94,7 @@
       <line x1="60" y1="30" x2="60" y2="130" stroke="#34d399" stroke-width="1.5"/><rect x="52" y="55" width="16" height="45" fill="#34d399"/>
       <line x1="100" y1="45" x2="100" y2="110" stroke="#f0665a" stroke-width="1.5"/><rect x="92" y="55" width="16" height="35" fill="#f0665a"/>
       <line x1="140" y1="20" x2="140" y2="120" stroke="#34d399" stroke-width="1.5"/><rect x="132" y="40" width="16" height="55" fill="#34d399"/>
-      <line x1="180" y1="50" x2="180" y2="115" stroke="#34d399" stroke-width="1.5"/><rect x="172" y="65" width="16" height="30" fill="#34d399"/>
-      <line x1="220" y1="35" x2="220" y2="125" stroke="#f0665a" stroke-width="1.5"/><rect x="212" y="45" width="16" height="50" fill="#f0665a"/>
-      <line x1="260" y1="25" x2="260" y2="100" stroke="#34d399" stroke-width="1.5"/><rect x="252" y="35" width="16" height="40" fill="#34d399"/>
       <path d="M40,95 L100,78 L140,70 L180,82 L220,60 L260,50 L320,42" stroke="#6fa8f5" stroke-width="1.5" fill="none" opacity="0.55"/>
-      <line x1="900" y1="40" x2="900" y2="120" stroke="#34d399" stroke-width="1.5"/><rect x="892" y="55" width="16" height="45" fill="#34d399"/>
-      <line x1="940" y1="55" x2="940" y2="115" stroke="#f0665a" stroke-width="1.5"/><rect x="932" y="65" width="16" height="30" fill="#f0665a"/>
-      <line x1="980" y1="30" x2="980" y2="110" stroke="#34d399" stroke-width="1.5"/><rect x="972" y="45" width="16" height="45" fill="#34d399"/>
-      <line x1="1020" y1="45" x2="1020" y2="130" stroke="#34d399" stroke-width="1.5"/><rect x="1012" y="60" width="16" height="50" fill="#34d399"/>
-      <line x1="1060" y1="25" x2="1060" y2="100" stroke="#f0665a" stroke-width="1.5"/><rect x="1052" y="35" width="16" height="35" fill="#f0665a"/>
-      <line x1="1100" y1="40" x2="1100" y2="115" stroke="#34d399" stroke-width="1.5"/><rect x="1092" y="55" width="16" height="40" fill="#34d399"/>
-      <path d="M860,90 L920,75 L960,68 L1000,80 L1040,55 L1080,48 L1140,38" stroke="#d4af6a" stroke-width="1.5" fill="none" opacity="0.5"/>
     </svg>
     <div class="hero-content">
     <div class="top-header">
@@ -154,7 +108,7 @@
     </div>
   </div>
 
-    <div id="app-body" style="display:none;">
+  <div id="app-body" style="display:none;">
     <div class="section-header"><h2>جدول اصلی</h2><span class="tag" id="mainTableTag"></span></div>
     <div class="card glass table-scroll"><table dir="ltr" id="mainTable"></table></div>
 
@@ -180,11 +134,26 @@
 
     <div class="section-header"><h2>تقویم اقتصادی آمریکا</h2></div>
     <div class="card glass table-scroll"><table dir="ltr" id="calendarTable"></table></div>
-    <div class="note" style="padding:0 4px;">ستون «تاریخ اعلام بعدی» تا ۳۰ روز آینده و به وقت ایران محاسبه می‌شود؛ تاریخ FOMC دقیق و رسمی است، بقیهٔ شاخص‌ها بر اساس الگوی معمول ماهانهٔ انتشارشان تقریبی‌اند و ممکن است ۱-۲ روز جابه‌جا شوند. عدد پیش‌بینی بازار (Forecast) منبع رایگان و رسمی ندارد و در این جدول نیامده.</div>
 
-    <div class="section-header"><h2>بازارهای جهانی و داخلی</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="marketsTable"></table></div>
-    <div class="note" id="marketsNote" style="padding:0 4px;"></div>
+    <div class="section-header"><h2>نرخ ۱۰/۲ ساله آمریکا</h2><span class="tag" id="marketsUpdatedTag">-</span></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="usYieldsTable"></table></div>
+
+    <div class="section-header"><h2>ارزهای اصلی</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="curMainTable"></table></div>
+
+    <div class="section-header"><h2>سایر ارزها</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="curOtherTable"></table></div>
+
+    <div class="section-header"><h2>نرخ فروش حواله</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="remitTable"></table></div>
+
+    <div class="section-header"><h2>ارزهای دیجیتال</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="cryptoTable"></table></div>
+    <div class="section-header"><h2>قیمت سکه و طلا</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="goldTable"></table></div>
+
+    <div class="section-header"><h2>حباب سکه و طلا</h2></div>
+    <div class="card glass table-scroll"><table dir="ltr" id="bubbleTable"></table></div>
 
     <div class="section-header"><h2>داشبورد امروز</h2></div>
     <div class="grid2">
@@ -200,7 +169,7 @@
       <span><i class="dot" style="background:#8891a3"></i>Yesterday</span>
       <span><i class="dot" style="background:#3ecfb5"></i>MA-7</span>
       <span><i class="dot" style="background:#e8a33d"></i>MA-30</span>
-     <span><i class="dot" style="background:#c084fc"></i>MA-60</span>
+      <span><i class="dot" style="background:#c084fc"></i>MA-60</span>
       <span><i class="dot" style="background:#e8604c"></i>MA-All</span>
     </div>
 
@@ -213,11 +182,9 @@
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="t5"></canvas></div></div>
       <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="t6"></canvas></div></div>
     </div>
-
   </div>
 
   <div id="emptyState" class="empty-note">داده‌ای هنوز دریافت نشده - اولین اجرای خودکار به‌زودی انجام می‌شود.</div>
-  <div class="footer-note">SANAYE CHIMIAI FARAZMAND — DAILY MACRO TRACKER · داده‌ها به‌صورت شخصی در این اپ ذخیره می‌شوند</div>
 </div>
 
 <script>
@@ -234,6 +201,7 @@ function maOf(field, n){
   return +(avg(vals)).toFixed(2);
 }
 function fmt(v){ return (v===null||v===undefined||isNaN(v)) ? '-' : v; }
+function fmt2(v){ return (v===null||v===undefined||isNaN(v)) ? '-' : (+v).toLocaleString('en-US', {maximumFractionDigits:2}); }
 function todayEntry(){ return history[history.length-1]; }
 function yestEntry(){ return history.length>1 ? history[history.length-2] : null; }
 
@@ -298,7 +266,7 @@ function renderAll(){
   renderAnalysisTable(last, prev);
   renderReminderTable();
   renderCalendarTable();
-  renderMarketsTable();
+  renderMarketsAll();
   renderCharts();
 }
 
@@ -373,7 +341,7 @@ function renderOutlookTable(last, prev){
     '<tr><td class="name">بورس آمریکا</td><td>'+(vixUp?'ریسک بالاتر':'نوسان معمول')+'</td><td>مثبت اما با نوسان</td></tr>' +
     '<tr><td class="name">کریپتو</td><td>'+(realUp||vixUp?'نوسانی، فشار نرخ واقعی':'نسبتا پایدار')+'</td><td>صعود ملایم پس از نوسان</td></tr>' +
     '<tr><td class="name">تورم انتظاری</td><td>'+((prev && last.t10yie>prev.t10yie)?'رو به افزایش':'ثابت نسبی')+'</td><td>نیازمند پایش</td></tr>';
-  }
+}
 function renderAnalysisTable(last, prev){
   const recessionSignal = last.sahm>=0.5 || last.t10y2y<0;
   const liqTrend = prev ? (last.cpffr>prev.cpffr?'سخت‌تر شده':(last.cpffr<prev.cpffr?'بهتر شده':'بدون تغییر')) : '-';
@@ -411,31 +379,31 @@ function renderCalendarTable(){
   });
   document.getElementById('calendarTable').innerHTML = html;
 }
-function fmt2(v){ return (v===null||v===undefined||isNaN(v)) ? '-' : (+v).toLocaleString('en-US', {maximumFractionDigits:2}); }
-function renderMarketsTable(){
-  if(!markets){
-    document.getElementById('marketsTable').innerHTML = '<tr><td style="padding:14px;color:var(--muted);">داده‌ای در دسترس نیست</td></tr>';
+function renderSimpleGroupTable(elId, items, unit){
+  if(!items || !items.length){
+    document.getElementById(elId).innerHTML = '<tr><td style="padding:14px;color:var(--muted);">داده‌ای در دسترس نیست</td></tr>';
     return;
   }
-  const rows = [
-    ['نرخ بهره ۱۰ ساله آمریکا (US10Y)', fmt2(markets.us10y), '%'],
-    ['نرخ بهره ۲ ساله آمریکا (US2Y)', fmt2(markets.us2y), '%'],
-    ['انس جهانی طلا (Gold Ounce)', fmt2(markets.goldOunce), 'دلار'],
-    ['نرخ دلار آزاد ایران', fmt2(markets.irUsdFree), 'تومان'],
-    ['طلای ۱۸ عیار ایران (هر گرم)', fmt2(markets.irGold18k), 'تومان'],
-    ['حباب طلای ۱۸ عیار', fmt2(markets.irGold18kBubble), '%'],
-  ];
-  let html = '<tr><th>شاخص</th><th>مقدار</th><th>واحد</th></tr>';
-  rows.forEach(function(r){
-    html += '<tr><td class="name">'+r[0]+'</td><td class="mono">'+r[1]+'</td><td class="mono">'+r[2]+'</td></tr>';
+  let html = '<tr><th>مورد</th><th>مقدار</th><th>واحد</th></tr>';
+  items.forEach(function(it){
+    html += '<tr><td class="name">'+it.name+'</td><td class="mono">'+fmt2(it.value)+'</td><td class="mono">'+(unit||'تومان')+'</td></tr>';
   });
-  document.getElementById('marketsTable').innerHTML = html;
-  const note = document.getElementById('marketsNote');
-  if(markets.navasanAvailable){
-    note.textContent = 'نرخ‌های ایران (دلار آزاد، طلای ۱۸ عیار، حباب) از سرویس Navasan.net دریافت می‌شوند و ممکن است با تأخیر چند دقیقه‌ای همراه باشند.';
-  } else {
-    note.textContent = 'کلید Navasan هنوز تنظیم نشده یا سرویس در دسترس نبود - نرخ‌های ایران فعلاً خالی‌اند. نرخ‌های ۱۰/۲ ساله آمریکا از FRED همیشه در دسترس‌اند.';
-  }
+  document.getElementById(elId).innerHTML = html;
+}
+function renderMarketsAll(){
+  if(!markets){ return; }
+  const updTag = document.getElementById('marketsUpdatedTag');
+  if(updTag){ updTag.textContent = markets.lastUpdated ? ('آخرین بروزرسانی: ' + markets.lastUpdated) : '-'; }
+  document.getElementById('usYieldsTable').innerHTML =
+    '<tr><th>شاخص</th><th>مقدار</th><th>واحد</th></tr>' +
+    '<tr><td class="name">نرخ بهره ۱۰ ساله آمریکا (US10Y)</td><td class="mono">'+fmt2(markets.us10y)+'</td><td class="mono">%</td></tr>' +
+    '<tr><td class="name">نرخ بهره ۲ ساله آمریکا (US2Y)</td><td class="mono">'+fmt2(markets.us2y)+'</td><td class="mono">%</td></tr>';
+  renderSimpleGroupTable('curMainTable', markets.currencyMain, 'تومان');
+  renderSimpleGroupTable('curOtherTable', markets.currencyOther, 'تومان');
+  renderSimpleGroupTable('remitTable', markets.remittance, 'تومان');
+  renderSimpleGroupTable('cryptoTable', markets.crypto, 'تومان');
+  renderSimpleGroupTable('goldTable', markets.goldCoins, 'تومان/دلار');
+  renderSimpleGroupTable('bubbleTable', markets.goldBubble, 'تومان/%');
 }
 const palette = { today:'#5b8def', yesterday:'#8891a3', ma7:'#3ecfb5', ma30:'#e8a33d', ma60:'#c084fc', ma180:'#e8604c' };
 const linePalette = { blue:'#5b8def', teal:'#3ecfb5', amber:'#e8a33d', red:'#e8604c', purple:'#c084fc' };
@@ -515,4 +483,3 @@ renderAll();
 </script>
 </body>
 </html>
-  
