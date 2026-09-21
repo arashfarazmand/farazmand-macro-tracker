@@ -1,5 +1,4 @@
 name: Daily Macro Update
-
 on:
 schedule:
     - cron: '30 5 * * *'
