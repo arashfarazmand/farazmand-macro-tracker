@@ -1,10 +1,5 @@
 name: Daily Macro Update
 on:
-schedule:
-    - cron: '30 5 * * *'
-    - cron: '45 7 * * *'
-    - cron: '30 9 * * *'
-    - cron: '30 13 * * *'
   workflow_dispatch:
 
 permissions:
