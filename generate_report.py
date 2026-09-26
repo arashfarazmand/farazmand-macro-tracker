@@ -30,6 +30,7 @@ MA_KEYS = ["us10y", "t10yie", "dfii10", "dltiit", "iorb", "effr",
            "cprate", "hyoas", "vix", "sahm", "t10y2y", "t10y2ym"]
 
 HISTORY_PATH = "data/history.json"
+MARKETS_RAW_PATH = "data/markets_raw.json"
 
 CALENDAR_SERIES = [
     {"key": "nfp",     "name": "NFP (تغییر اشتغال غیرکشاورزی)", "series_id": "PAYEMS",   "kind": "mom_diff", "unit": "هزار نفر"},
@@ -63,33 +64,36 @@ RELEASE_RULES = {
 }
 
 CURRENCY_MAIN = [
-    ("usd", "دلار آمریکا"), ("usdt", "تتر (Tether)"), ("eur", "یورو"), ("gbp", "پوند انگلیس"),
-    ("aed", "درهم امارات"), ("try", "لیر ترکیه"), ("jpy", "ین ژاپن"), ("aud", "دلار استرالیا"),
-    ("nzd", "دلار نیوزلند"), ("cad", "دلار کانادا"), ("sgd", "دلار سنگاپور"), ("chf", "فرانک سوئیس"),
-    ("pkr", "روپیه پاکستان"), ("azn", "منات آذربایجان"),
+    ("usd", "دلار آمریکا", "🇺🇸", ""), ("usdt", "تتر (Tether)", "🟢", ""), ("eur", "یورو", "🇪🇺", ""), ("gbp", "پوند انگلیس", "🇬🇧", ""),
+    ("aed", "درهم امارات", "🇦🇪", ""), ("try", "لیر ترکیه", "🇹🇷", ""), ("jpy", "ین ژاپن", "🇯🇵", ""), ("aud", "دلار استرالیا", "🇦🇺", ""),
+    ("nzd", "دلار نیوزلند", "🇳🇿", ""), ("cad", "دلار کانادا", "🇨🇦", ""), ("sgd", "دلار سنگاپور", "🇸🇬", ""), ("chf", "فرانک سوئیس", "🇨🇭", ""),
+    ("pkr", "روپیه پاکستان", "🇵🇰", ""), ("azn", "منات آذربایجان", "🇦🇿", ""),
 ]
 CURRENCY_OTHER = [
-    ("nok", "کرون نروژ"), ("sek", "کرون سوئد"), ("dkk", "کرون دانمارک"), ("kwd", "دینار کویت"),
-    ("omr", "ریال عمان"), ("rub", "روبل روسیه"), ("brl", "رئال برزیل"), ("thb", "بات تایلند"),
-    ("afn", "افغانی"), ("inr", "روپیه هند"), ("cny", "یوان چین"), ("myr", "رینگیت مالزی"), ("gel", "لاری گرجستان"),
+    ("nok", "کرون نروژ", "🇳🇴", ""), ("sek", "کرون سوئد", "🇸🇪", ""), ("dkk", "کرون دانمارک", "🇩🇰", ""), ("kwd", "دینار کویت", "🇰🇼", ""),
+    ("omr", "ریال عمان", "🇴🇲", ""), ("rub", "روبل روسیه", "🇷🇺", ""), ("brl", "رئال برزیل", "🇧🇷", ""), ("thb", "بات تایلند", "🇹🇭", ""),
+    ("afn", "افغانی", "🇦🇫", ""), ("inr", "روپیه هند", "🇮🇳", ""), ("cny", "یوان چین", "🇨🇳", ""), ("myr", "رینگیت مالزی", "🇲🇾", ""), ("gel", "لاری گرجستان", "🇬🇪", ""),
 ]
 REMITTANCE = [
-    ("usd_shakhs", "حواله دلار (شخصی)"), ("usd_sherkat", "حواله دلار (شرکتی)"), ("eur_hav", "حواله یورو"),
-    ("gbp_hav", "حواله پوند"), ("hav_cad_cheque", "حواله دلار کانادا"), ("aud_hav", "حواله دلار استرالیا"),
-    ("myr_hav", "حواله رینگیت"), ("cny_hav", "حواله یوان"), ("try_hav", "حواله لیر"),
+    ("usd_shakhs", "حواله دلار (شخصی)", "🇺🇸", ""), ("usd_sherkat", "حواله دلار (شرکتی)", "🇺🇸", ""), ("eur_hav", "حواله یورو", "🇪🇺", ""),
+    ("gbp_hav", "حواله پوند", "🇬🇧", ""), ("hav_cad_cheque", "حواله دلار کانادا", "🇨🇦", ""), ("aud_hav", "حواله دلار استرالیا", "🇦🇺", ""),
+    ("myr_hav", "حواله رینگیت", "🇲🇾", ""), ("cny_hav", "حواله یوان", "🇨🇳", ""), ("try_hav", "حواله لیر", "🇹🇷", ""),
 ]
 CRYPTO = [
-    ("btc", "بیت‌کوین"), ("eth", "اتریوم"), ("bnb", "بایننس کوین"), ("usdt", "تتر"), ("doge", "دوج کوین"),
+    ("btc", "بیت‌کوین", "₿", ""), ("eth", "اتریوم", "Ξ", ""), ("bnb", "بایننس کوین", "🔶", ""), ("doge", "دوج کوین", "🐕", ""),
 ]
 GOLD_COINS = [
-    ("usd_xau", "انس جهانی طلا (دلار)"), ("18ayar", "طلای ۱۸ عیار (هر گرم)"), ("sekkeh", "سکه طرح امامی"),
-    ("bahar", "سکه بهار آزادی"), ("nim", "نیم سکه"), ("rob", "ربع سکه"),
-    ("abshodeh", "مثقال طلای آب‌شده"), ("gerami", "سکه گرمی"),
+    ("usd_xau", "انس جهانی طلا", "🥇", "$"), ("18ayar", "طلای ۱۸ عیار (هر گرم)", "🟡", ""), ("sekkeh", "سکه طرح امامی", "🪙", ""),
+    ("bahar", "سکه بهار آزادی", "🪙", ""), ("nim", "نیم سکه", "🪙", ""), ("rob", "ربع سکه", "🪙", ""),
+    ("abshodeh", "مثقال طلای آب‌شده", "🟡", ""), ("gerami", "سکه گرمی", "🪙", ""),
 ]
 GOLD_BUBBLE = [
-    ("bub_sekkeh", "حباب سکه امامی"), ("bub_bahar", "حباب سکه بهار آزادی"), ("bub_nim", "حباب نیم سکه"),
-    ("bub_rob", "حباب ربع سکه"), ("bub_18ayar", "حباب طلای ۱۸ عیار"), ("bub_gerami", "حباب سکه گرمی"),
+    ("bub_sekkeh", "حباب سکه امامی", "📊", ""), ("bub_bahar", "حباب سکه بهار آزادی", "📊", ""), ("bub_nim", "حباب نیم سکه", "📊", ""),
+    ("bub_rob", "حباب ربع سکه", "📊", ""), ("bub_18ayar", "حباب طلای ۱۸ عیار", "📊", ""), ("bub_gerami", "حباب سکه گرمی", "📊", ""),
 ]
+
+NAVASAN_SLOTS_MIN = [9 * 60 + 0, 11 * 60 + 15, 13 * 60 + 0, 17 * 60 + 0]
+NAVASAN_TOLERANCE_MIN = 20
 
 
 def _fa_num(n):
@@ -189,11 +193,53 @@ def fetch_navasan():
         return {}
 
 
-def build_markets(us10y, us2y, navasan_data):
+def should_fetch_navasan_now(now_iran):
+    now_min = now_iran.hour * 60 + now_iran.minute
+    for slot in NAVASAN_SLOTS_MIN:
+        if abs(now_min - slot) <= NAVASAN_TOLERANCE_MIN:
+            return True
+    return False
+
+
+def load_markets_raw():
+    if os.path.exists(MARKETS_RAW_PATH):
+        with open(MARKETS_RAW_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
+def save_markets_raw(data, fetched_at_label):
+    os.makedirs(os.path.dirname(MARKETS_RAW_PATH), exist_ok=True)
+    with open(MARKETS_RAW_PATH, "w", encoding="utf-8") as f:
+        json.dump({"data": data, "fetchedAt": fetched_at_label}, f, ensure_ascii=False, indent=2)
+
+
+def get_navasan_snapshot():
     now_iran = datetime.now(IRAN)
     jd = jdatetime.date.fromgregorian(date=now_iran.date())
-    last_updated = f"{_fa_num(jd.day)} {MONTHS_FA[jd.month-1]} {_fa_num(jd.year)} - ساعت {now_iran.strftime('%H:%M')}"
+    now_label = f"{_fa_num(jd.day)} {MONTHS_FA[jd.month - 1]} {_fa_num(jd.year)} - ساعت {now_iran.strftime('%H:%M')}"
 
+    if should_fetch_navasan_now(now_iran):
+        data = fetch_navasan()
+        if data:
+            save_markets_raw(data, now_label)
+            return data, now_label, True
+        cached = load_markets_raw()
+        if cached:
+            return cached["data"], cached["fetchedAt"], False
+        return {}, None, False
+    else:
+        cached = load_markets_raw()
+        if cached:
+            return cached["data"], cached["fetchedAt"], False
+        data = fetch_navasan()
+        if data:
+            save_markets_raw(data, now_label)
+            return data, now_label, True
+        return {}, None, False
+
+
+def build_markets(us10y, us2y, navasan_data, navasan_updated_label):
     def nv(key):
         item = navasan_data.get(key)
         if not item:
@@ -204,13 +250,13 @@ def build_markets(us10y, us2y, navasan_data):
             return None
 
     def build_group(items):
-        return [{"name": label, "value": nv(key)} for key, label in items]
+        return [{"name": label, "value": nv(key), "icon": icon, "unit": unit} for key, label, icon, unit in items]
 
     return {
         "us10y": us10y,
         "us2y": us2y,
         "navasanAvailable": bool(navasan_data),
-        "lastUpdated": last_updated,
+        "lastUpdated": navasan_updated_label,
         "currencyMain": build_group(CURRENCY_MAIN),
         "currencyOther": build_group(CURRENCY_OTHER),
         "remittance": build_group(REMITTANCE),
@@ -337,9 +383,14 @@ def main():
     if latest_date is None:
         raise SystemExit("Could not fetch any data from FRED.")
 
+    now_iran_fred = datetime.now(IRAN)
+    jd_fred = jdatetime.date.fromgregorian(date=now_iran_fred.date())
+    fetched_at = f"{_fa_num(jd_fred.day)} {MONTHS_FA[jd_fred.month-1]} {_fa_num(jd_fred.year)} - ساعت {now_iran_fred.strftime('%H:%M')}"
+
     entry = {
         "gdate": latest_date,
         "jdate": gregorian_to_jalali_label(latest_date),
+        "fetchedAt": fetched_at,
         "us10y": values["us10y"], "t10yie": values["t10yie"], "dfii10": values["dfii10"],
         "dltiit": values["dltiit"],
         "ffr": f'{values["ffr_lower"]:.2f}-{values["ffr_upper"]:.2f}' if values["ffr_lower"] and values["ffr_upper"] else "-",
@@ -380,8 +431,9 @@ def main():
     save_history(history)
 
     calendar = build_calendar()
-    navasan_data = fetch_navasan()
-    markets = build_markets(values["us10y"], values.get("us2y"), navasan_data)
+
+    navasan_data, navasan_updated_label, navasan_fresh = get_navasan_snapshot()
+    markets = build_markets(values["us10y"], values.get("us2y"), navasan_data, navasan_updated_label)
 
     with open("template.html", "r", encoding="utf-8") as f:
         template = f.read()
@@ -393,7 +445,8 @@ def main():
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
 
-    print(f"index.html generated with {len(history)} days of history, {len(calendar)} calendar rows, navasan={'ok' if navasan_data else 'skipped'}.")
+    print(f"index.html generated. history={len(history)} days, calendar={len(calendar)} rows, "
+          f"navasan={'fresh-fetch' if navasan_fresh else ('cached' if navasan_data else 'unavailable')}.")
 
 
 if __name__ == "__main__":
