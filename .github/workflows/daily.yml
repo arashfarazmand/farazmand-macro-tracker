@@ -1,4 +1,4 @@
-name: Daily Macro Update
+.name: Daily Macro Update
 on:
   workflow_dispatch:
 
