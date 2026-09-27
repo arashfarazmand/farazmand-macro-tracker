@@ -53,7 +53,7 @@
   .date-line{font-family:var(--mono); color:var(--muted); font-size:12.5px; margin-top:7px;}
   .tag{ font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--border);
     background:rgba(255,255,255,0.03); padding:7px 14px; border-radius:99px; }
-  .section-header{display:flex; justify-content:space-between; align-items:center; margin:36px 0 14px;}
+  .section-header{display:flex; justify-content:space-between; align-items:center; margin:36px 0 14px; flex-wrap:wrap; gap:8px;}
   .section-header h2{font-size:17px; margin:0; font-weight:800; display:flex; align-items:center; gap:9px;}
   .section-header h2::before{ content:''; width:3px; height:16px; border-radius:2px;
     background:linear-gradient(180deg, var(--azure), var(--emerald)); display:inline-block; }
@@ -68,6 +68,7 @@
   tbody tr{transition:background .15s;}
   tbody tr:hover{background:rgba(255,255,255,0.025);}
   td.name{text-align:right; font-weight:600; white-space:normal;}
+  td.namec{text-align:center; font-weight:600;}
   td.mono{font-family:var(--mono);}
   .status{font-family:var(--mono); font-size:10.5px; padding:4px 10px; border-radius:99px; display:inline-block; letter-spacing:.02em;}
   .st-warn{color:var(--gold); border:1px solid rgba(212,175,106,.32); background:rgba(212,175,106,0.06);}
@@ -82,9 +83,19 @@
   .legend-key span{display:flex; align-items:center; gap:6px;}
   .dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
   .empty-note{color:var(--muted); font-size:13px; text-align:center; padding:30px 10px;}
-  .footer-note{margin-top:38px; font-family:var(--mono); font-size:10.5px; color:var(--muted-2); text-align:center; letter-spacing:.03em;}
   .note{font-size:11.5px; color:var(--muted); margin-top:10px; line-height:1.8;}
   .subhead{font-size:13.5px; font-weight:700; margin:0 0 10px; color:var(--text);}
+  .icon-card{ cursor:pointer; text-align:center; padding:30px 18px; transition:transform .15s, border-color .15s; }
+  .icon-card:hover{ transform:translateY(-3px); border-color:var(--gold); }
+  .icon-emoji{ font-size:38px; margin-bottom:12px; }
+  .icon-title{ font-size:15px; font-weight:800; margin-bottom:6px; }
+  .icon-sub{ font-size:11.5px; color:var(--muted); }
+  .back-btn{
+    background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text);
+    font-family:var(--fa); font-size:13px; padding:9px 16px; border-radius:10px; cursor:pointer; margin-bottom:10px;
+  }
+  .back-btn:hover{ border-color:var(--gold); }
+  .placeholder-card{ text-align:center; padding:60px 20px; color:var(--muted); font-size:14px; }
 </style>
 </head>
 <body>
@@ -109,79 +120,160 @@
   </div>
 
   <div id="app-body" style="display:none;">
-    <div class="section-header"><h2>جدول اصلی</h2><span class="tag" id="mainTableTag"></span></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="mainTable"></table></div>
 
-    <div class="section-header"><h2>تغییرات نسبت به دیروز</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="changeTable"></table></div>
-
-    <div class="grid2" style="margin-top:20px;">
-      <div class="card glass"><h2 style="font-size:15px;margin:0 0 12px;">Sahm Rule و Yield Curve</h2><table dir="ltr" id="sahmTable"></table></div>
-      <div class="card glass"><h2 style="font-size:15px;margin:0 0 12px;">تحلیل VIX</h2><table dir="ltr" id="vixTable"></table></div>
+    <div id="home-screen">
+      <div class="grid3" style="margin-top:10px;">
+        <div class="card glass icon-card" onclick="showSection('currency')">
+          <div class="icon-emoji">💱</div>
+          <div class="icon-title">قیمت ارزها</div>
+          <div class="icon-sub">ارزهای اصلی، دیجیتال، سکه و طلا</div>
+        </div>
+        <div class="card glass icon-card" onclick="showSection('global')">
+          <div class="icon-emoji">🌍</div>
+          <div class="icon-title">اقتصاد جهانی و آمریکا</div>
+          <div class="icon-sub">۱۵ شاخص، تحلیل‌ها و نمودارها</div>
+        </div>
+        <div class="card glass icon-card" onclick="showSection('iran')">
+          <div class="icon-emoji">🇮🇷</div>
+          <div class="icon-title">تورم ایران</div>
+          <div class="icon-sub">تورم، نقدینگی، پایه پولی</div>
+        </div>
+        <div class="card glass icon-card" onclick="showSection('invest')">
+          <div class="icon-emoji">💡</div>
+          <div class="icon-title">تحلیل و پیشنهاد سرمایه‌گذاری</div>
+          <div class="icon-sub">یادداشت‌های شخصی</div>
+        </div>
+        <div class="card glass icon-card" onclick="showSection('news')">
+          <div class="icon-emoji">📰</div>
+          <div class="icon-title">اخبار مهم اقتصادی</div>
+          <div class="icon-sub">تقویم انتشار آمار آمریکا</div>
+        </div>
+      </div>
     </div>
 
-    <div class="section-header"><h2>جدول جامع تاثیرات جهانی</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="globalTable"></table></div>
+    <div id="section-currency" class="app-section" style="display:none;">
+      <button class="back-btn" onclick="showHome()">→ بازگشت به صفحه اصلی</button>
+      <div class="section-header"><h2>نرخ ارزها و طلا</h2><span class="tag" id="marketsUpdatedTag">-</span></div>
 
-    <div class="section-header"><h2>جمع‌بندی کوتاه‌مدت و بلندمدت</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="outlookTable"></table></div>
+      <div class="grid2">
+        <div>
+          <div class="section-header" style="margin-top:0;"><h2>ارزهای اصلی</h2></div>
+          <div class="card glass table-scroll"><table id="curMainTable"></table></div>
+        </div>
+        <div>
+          <div class="section-header" style="margin-top:0;"><h2>سایر ارزها</h2></div>
+          <div class="card glass table-scroll"><table id="curOtherTable"></table></div>
+        </div>
+      </div>
 
-    <div class="section-header"><h2>تحلیل حرفه‌ای جامع روز</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="analysisTable"></table></div>
+      <div class="grid2" style="margin-top:20px;">
+        <div>
+          <div class="section-header" style="margin-top:0;"><h2>نرخ فروش حواله</h2></div>
+          <div class="card glass table-scroll"><table id="remitTable"></table></div>
+        </div>
+        <div>
+          <div class="section-header" style="margin-top:0;"><h2>ارزهای دیجیتال</h2></div>
+          <div class="card glass table-scroll"><table id="cryptoTable"></table></div>
+        </div>
+      </div>
 
-    <div class="section-header"><h2>یادآوری ثابت - CPFFR و HY OAS</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="reminderTable"></table></div>
-
-    <div class="section-header"><h2>تقویم اقتصادی آمریکا</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="calendarTable"></table></div>
-
-    <div class="section-header"><h2>نرخ ۱۰/۲ ساله آمریکا</h2><span class="tag" id="marketsUpdatedTag">-</span></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="usYieldsTable"></table></div>
-
-    <div class="section-header"><h2>ارزهای اصلی</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="curMainTable"></table></div>
-
-    <div class="section-header"><h2>سایر ارزها</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="curOtherTable"></table></div>
-
-    <div class="section-header"><h2>نرخ فروش حواله</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="remitTable"></table></div>
-
-    <div class="section-header"><h2>ارزهای دیجیتال</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="cryptoTable"></table></div>
-    <div class="section-header"><h2>قیمت سکه و طلا</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="goldTable"></table></div>
-
-    <div class="section-header"><h2>حباب سکه و طلا</h2></div>
-    <div class="card glass table-scroll"><table dir="ltr" id="bubbleTable"></table></div>
-
-    <div class="section-header"><h2>داشبورد امروز</h2></div>
-    <div class="grid2">
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="d1"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="d2"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="d3"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
-    </div>
-    <div class="legend-key">
-      <span><i class="dot" style="background:#5b8def"></i>Today</span>
-      <span><i class="dot" style="background:#8891a3"></i>Yesterday</span>
-      <span><i class="dot" style="background:#3ecfb5"></i>MA-7</span>
-      <span><i class="dot" style="background:#e8a33d"></i>MA-30</span>
-      <span><i class="dot" style="background:#c084fc"></i>MA-60</span>
-      <span><i class="dot" style="background:#e8604c"></i>MA-All</span>
+      <div class="grid2" style="margin-top:20px;">
+        <div>
+          <div class="section-header" style="margin-top:0;"><h2>قیمت سکه و طلا</h2></div>
+          <div class="card glass table-scroll"><table id="goldTable"></table></div>
+        </div>
+        <div>
+          <div class="section-header" style="margin-top:0;"><h2>حباب سکه و طلا</h2></div>
+          <div class="card glass table-scroll"><table id="bubbleTable"></table></div>
+        </div>
+      </div>
+      </div>
     </div>
 
-    <div class="section-header"><h2>روند خطی تاریخی</h2></div>
-    <div class="grid2">
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="t1"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="t2"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="t3"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="t4"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="t5"></canvas></div></div>
-      <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="t6"></canvas></div></div>
+    <div id="section-global" class="app-section" style="display:none;">
+      <button class="back-btn" onclick="showHome()">→ بازگشت به صفحه اصلی</button>
+      <div class="section-header"><h2>جدول اصلی</h2><span class="tag" id="mainTableTag"></span><span class="tag" id="fredUpdatedTag">-</span></div>
+      <div class="card glass table-scroll"><table dir="ltr" id="mainTable"></table></div>
+
+      <div class="section-header"><h2>تغییرات نسبت به دیروز</h2></div>
+      <div class="card glass table-scroll"><table dir="ltr" id="changeTable"></table></div>
+
+      <div class="grid2" style="margin-top:20px;">
+        <div class="card glass"><h2 style="font-size:15px;margin:0 0 12px;">Sahm Rule و Yield Curve</h2><table dir="ltr" id="sahmTable"></table></div>
+        <div class="card glass"><h2 style="font-size:15px;margin:0 0 12px;">تحلیل VIX</h2><table dir="ltr" id="vixTable"></table></div>
+      </div>
+
+      <div class="section-header"><h2>جدول جامع تاثیرات جهانی</h2></div>
+      <div class="card glass table-scroll"><table dir="ltr" id="globalTable"></table></div>
+
+      <div class="section-header"><h2>جمع‌بندی کوتاه‌مدت و بلندمدت</h2></div>
+      <div class="card glass table-scroll"><table dir="ltr" id="outlookTable"></table></div>
+
+      <div class="section-header"><h2>تحلیل حرفه‌ای جامع روز</h2></div>
+      <div class="card glass table-scroll"><table dir="ltr" id="analysisTable"></table></div>
+
+      <div class="section-header"><h2>یادآوری ثابت - CPFFR و HY OAS</h2></div>
+      <div class="card glass table-scroll"><table dir="ltr" id="reminderTable"></table></div>
+
+      <div class="section-header"><h2>نرخ ۱۰/۲ ساله آمریکا</h2></div>
+      <div class="card glass table-scroll"><table id="usYieldsTable"></table></div>
+
+      <div class="section-header"><h2>داشبورد امروز</h2></div>
+      <div class="grid2">
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="d1"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="d2"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="d3"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="d4"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="d5"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="d6"></canvas></div></div>
+      </div>
+      <div class="legend-key">
+        <span><i class="dot" style="background:#5b8def"></i>Today</span>
+        <span><i class="dot" style="background:#8891a3"></i>Yesterday</span>
+        <span><i class="dot" style="background:#3ecfb5"></i>MA-7</span>
+        <span><i class="dot" style="background:#e8a33d"></i>MA-30</span>
+        <span><i class="dot" style="background:#c084fc"></i>MA-60</span>
+        <span><i class="dot" style="background:#e8604c"></i>MA-All</span>
+      </div>
+
+      <div class="section-header"><h2>روند خطی تاریخی</h2></div>
+      <div class="grid2">
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های بلندمدت و واقعی</h3><div class="chart-box"><canvas id="t1"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">نرخ‌های سیاست پولی و کوتاه‌مدت</h3><div class="chart-box"><canvas id="t2"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">CPFFR</h3><div class="chart-box"><canvas id="t3"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">HY OAS</h3><div class="chart-box"><canvas id="t4"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">VIX</h3><div class="chart-box"><canvas id="t5"></canvas></div></div>
+        <div class="card glass"><h3 style="font-size:14px;margin:0 0 8px;">منحنی بازده و Sahm Rule</h3><div class="chart-box"><canvas id="t6"></canvas></div></div>
+      </div>
+
+      <div class="section-header"><h2>چرخهٔ کالایی (BCOM)</h2></div>
+      <div class="card glass placeholder-card">به‌زودی اضافه می‌شود</div>
+
+      <div class="section-header"><h2>نفت واقعی در برابر روند بلندمدت (HP Filter)</h2></div>
+      <div class="card glass placeholder-card">به‌زودی اضافه می‌شود</div>
+
+      <div class="section-header"><h2>نسبت S&P 500 به طلا</h2></div>
+      <div class="card glass placeholder-card">به‌زودی اضافه می‌شود</div>
     </div>
+
+    <div id="section-iran" class="app-section" style="display:none;">
+      <button class="back-btn" onclick="showHome()">→ بازگشت به صفحه اصلی</button>
+      <div class="section-header"><h2>تورم ایران</h2></div>
+      <div class="card glass placeholder-card">هنوز داده‌ای ثبت نشده — هر وقت اعداد رو بفرستی اضافه می‌شود</div>
+    </div>
+
+    <div id="section-invest" class="app-section" style="display:none;">
+      <button class="back-btn" onclick="showHome()">→ بازگشت به صفحه اصلی</button>
+      <div class="section-header"><h2>تحلیل و پیشنهاد سرمایه‌گذاری</h2></div>
+      <div class="card glass placeholder-card">این بخش خالیه — هر وقت خواستی محتوا اضافه می‌کنیم</div>
+    </div>
+
+    <div id="section-news" class="app-section" style="display:none;">
+      <button class="back-btn" onclick="showHome()">→ بازگشت به صفحه اصلی</button>
+      <div class="section-header"><h2>تقویم اقتصادی آمریکا</h2><span class="tag" id="newsUpdatedTag">-</span></div>
+      <div class="card glass table-scroll"><table id="calendarTable"></table></div>
+    </div>
+
   </div>
 
   <div id="emptyState" class="empty-note">داده‌ای هنوز دریافت نشده - اولین اجرای خودکار به‌زودی انجام می‌شود.</div>
@@ -192,6 +284,18 @@ const charts = {};
 const history = __HISTORY_JSON__;
 const calendar = __CALENDAR_JSON__;
 const markets = __MARKETS_JSON__;
+
+function showSection(name){
+  document.getElementById('home-screen').style.display = 'none';
+  document.querySelectorAll('.app-section').forEach(function(s){ s.style.display = 'none'; });
+  document.getElementById('section-'+name).style.display = '';
+  window.scrollTo(0,0);
+}
+function showHome(){
+  document.querySelectorAll('.app-section').forEach(function(s){ s.style.display = 'none'; });
+  document.getElementById('home-screen').style.display = '';
+  window.scrollTo(0,0);
+}
 
 function avg(arr){ return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
 function maOf(field, n){
@@ -257,6 +361,10 @@ function renderAll(){
   document.getElementById('latestDateLine').textContent = last.jdate + '  |  ' + fmtGDate(last.gdate);
   document.getElementById('dayCountTag').textContent = history.length + ' روز ثبت‌شده';
   document.getElementById('mainTableTag').textContent = 'Baseline: ' + history[0].jdate;
+  const fredTag = document.getElementById('fredUpdatedTag');
+  if(fredTag){ fredTag.textContent = last.fetchedAt ? ('آخرین بروزرسانی: ' + last.fetchedAt) : '-'; }
+  const newsTag = document.getElementById('newsUpdatedTag');
+  if(newsTag){ newsTag.textContent = last.fetchedAt ? ('آخرین بروزرسانی: ' + last.fetchedAt) : '-'; }
   renderMainTable(last, prev);
   renderChangeTable(last, prev);
   renderSahmTable(last);
@@ -375,18 +483,19 @@ function renderCalendarTable(){
     if(c.previous!==null && c.actual!==null && c.previous!==undefined && c.actual!==undefined){
       cls = c.actual > c.previous ? 'up' : (c.actual < c.previous ? 'down' : 'flat');
     }
-    html += '<tr><td class="name">'+c.name+'</td><td class="mono">'+c.period+'</td><td class="mono">'+prevStr+'</td><td class="mono '+cls+'">'+actStr+'</td><td class="mono">'+c.unit+'</td><td class="mono" style="white-space:normal;">'+(c.release||'-')+'</td></tr>';
+    html += '<tr><td class="namec">'+c.name+'</td><td class="mono">'+c.period+'</td><td class="mono">'+prevStr+'</td><td class="mono '+cls+'">'+actStr+'</td><td class="mono">'+c.unit+'</td><td class="mono" style="white-space:normal;">'+(c.release||'-')+'</td></tr>';
   });
   document.getElementById('calendarTable').innerHTML = html;
 }
-function renderSimpleGroupTable(elId, items, unit){
+function renderSimpleGroupTable(elId, items){
   if(!items || !items.length){
     document.getElementById(elId).innerHTML = '<tr><td style="padding:14px;color:var(--muted);">داده‌ای در دسترس نیست</td></tr>';
     return;
   }
-  let html = '<tr><th>مورد</th><th>مقدار</th><th>واحد</th></tr>';
+  let html = '<tr><th>مورد</th><th>مقدار</th></tr>';
   items.forEach(function(it){
-    html += '<tr><td class="name">'+it.name+'</td><td class="mono">'+fmt2(it.value)+'</td><td class="mono">'+(unit||'تومان')+'</td></tr>';
+    const valStr = fmt2(it.value) + (it.unit ? (' '+it.unit) : '');
+    html += '<tr><td class="namec">'+(it.icon?it.icon+' ':'')+it.name+'</td><td class="mono">'+valStr+'</td></tr>';
   });
   document.getElementById(elId).innerHTML = html;
 }
@@ -394,16 +503,18 @@ function renderMarketsAll(){
   if(!markets){ return; }
   const updTag = document.getElementById('marketsUpdatedTag');
   if(updTag){ updTag.textContent = markets.lastUpdated ? ('آخرین بروزرسانی: ' + markets.lastUpdated) : '-'; }
-  document.getElementById('usYieldsTable').innerHTML =
-    '<tr><th>شاخص</th><th>مقدار</th><th>واحد</th></tr>' +
-    '<tr><td class="name">نرخ بهره ۱۰ ساله آمریکا (US10Y)</td><td class="mono">'+fmt2(markets.us10y)+'</td><td class="mono">%</td></tr>' +
-    '<tr><td class="name">نرخ بهره ۲ ساله آمریکا (US2Y)</td><td class="mono">'+fmt2(markets.us2y)+'</td><td class="mono">%</td></tr>';
-  renderSimpleGroupTable('curMainTable', markets.currencyMain, 'تومان');
-  renderSimpleGroupTable('curOtherTable', markets.currencyOther, 'تومان');
-  renderSimpleGroupTable('remitTable', markets.remittance, 'تومان');
-  renderSimpleGroupTable('cryptoTable', markets.crypto, 'تومان');
-  renderSimpleGroupTable('goldTable', markets.goldCoins, 'تومان/دلار');
-  renderSimpleGroupTable('bubbleTable', markets.goldBubble, 'تومان/%');
+  if(document.getElementById('usYieldsTable')){
+    document.getElementById('usYieldsTable').innerHTML =
+      '<tr><th>شاخص</th><th>مقدار</th><th>واحد</th></tr>' +
+      '<tr><td class="namec">نرخ بهره ۱۰ ساله آمریکا (US10Y)</td><td class="mono">'+fmt2(markets.us10y)+'</td><td class="mono">%</td></tr>' +
+      '<tr><td class="namec">نرخ بهره ۲ ساله آمریکا (US2Y)</td><td class="mono">'+fmt2(markets.us2y)+'</td><td class="mono">%</td></tr>';
+  }
+  renderSimpleGroupTable('curMainTable', markets.currencyMain);
+  renderSimpleGroupTable('curOtherTable', markets.currencyOther);
+  renderSimpleGroupTable('remitTable', markets.remittance);
+  renderSimpleGroupTable('cryptoTable', markets.crypto);
+  renderSimpleGroupTable('goldTable', markets.goldCoins);
+  renderSimpleGroupTable('bubbleTable', markets.goldBubble);
 }
 const palette = { today:'#5b8def', yesterday:'#8891a3', ma7:'#3ecfb5', ma30:'#e8a33d', ma60:'#c084fc', ma180:'#e8604c' };
 const linePalette = { blue:'#5b8def', teal:'#3ecfb5', amber:'#e8a33d', red:'#e8604c', purple:'#c084fc' };
@@ -480,6 +591,16 @@ function renderCharts(){
   ]}, options: lineOptions(true)});
 }
 renderAll();
+
+// Auto-refresh: fetch a fresh copy of the page every few minutes so the visitor
+// never has to manually reload to see the latest FRED/Navasan update.
+(function(){
+  var REFRESH_MS = 3 * 60 * 1000; // 3 minutes
+  setInterval(function(){
+    var url = window.location.pathname + '?t=' + Date.now();
+    window.location.href = url;
+  }, REFRESH_MS);
+})();
 </script>
 </body>
 </html>
