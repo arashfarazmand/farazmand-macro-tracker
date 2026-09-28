@@ -92,8 +92,8 @@ GOLD_BUBBLE = [
     ("bub_rob", "حباب ربع سکه", "📊", ""), ("bub_18ayar", "حباب طلای ۱۸ عیار", "📊", ""), ("bub_gerami", "حباب سکه گرمی", "📊", ""),
 ]
 
-NAVASAN_SLOTS_MIN = [9 * 60 + 0, 11 * 60 + 15, 13 * 60 + 0, 17 * 60 + 0]
-NAVASAN_TOLERANCE_MIN = 20
+# ساعت‌های بروزرسانی نوسان (به وقت ایران، بر حسب دقیقه از نیمه‌شب): ۹:۰۰، ۱۳:۰۰، ۱۷:۰۰
+NAVASAN_SLOTS_MIN = [9 * 60, 13 * 60, 17 * 60]
 
 
 def _fa_num(n):
@@ -193,12 +193,14 @@ def fetch_navasan():
         return {}
 
 
-def should_fetch_navasan_now(now_iran):
+def latest_slot_key(now_iran):
+    """آخرین ساعت مشخصی که تا الان گذشته (مثلاً 2026-09-28-780). برای هر ساعت فقط یک بار درخواست می‌رود."""
     now_min = now_iran.hour * 60 + now_iran.minute
-    for slot in NAVASAN_SLOTS_MIN:
-        if abs(now_min - slot) <= NAVASAN_TOLERANCE_MIN:
-            return True
-    return False
+    passed = [s for s in NAVASAN_SLOTS_MIN if s <= now_min]
+    if passed:
+        return f"{now_iran.date().isoformat()}-{max(passed)}"
+    prev_day = now_iran.date() - timedelta(days=1)
+    return f"{prev_day.isoformat()}-{max(NAVASAN_SLOTS_MIN)}"
 
 
 def load_markets_raw():
@@ -208,10 +210,11 @@ def load_markets_raw():
     return None
 
 
-def save_markets_raw(data, fetched_at_label):
+def save_markets_raw(data, fetched_at_label, slot_key):
     os.makedirs(os.path.dirname(MARKETS_RAW_PATH), exist_ok=True)
     with open(MARKETS_RAW_PATH, "w", encoding="utf-8") as f:
-        json.dump({"data": data, "fetchedAt": fetched_at_label}, f, ensure_ascii=False, indent=2)
+        json.dump({"data": data, "fetchedAt": fetched_at_label, "slot": slot_key},
+                  f, ensure_ascii=False, indent=2)
 
 
 def get_navasan_snapshot():
@@ -219,24 +222,20 @@ def get_navasan_snapshot():
     jd = jdatetime.date.fromgregorian(date=now_iran.date())
     now_label = f"{_fa_num(jd.day)} {MONTHS_FA[jd.month - 1]} {_fa_num(jd.year)} - ساعت {now_iran.strftime('%H:%M')}"
 
-    if should_fetch_navasan_now(now_iran):
+    slot_key = latest_slot_key(now_iran)
+    cached = load_markets_raw()
+    force = os.environ.get("FORCE_NAVASAN", "").strip().lower() == "true"
+    need_fetch = force or cached is None or cached.get("slot") != slot_key
+
+    if need_fetch:
         data = fetch_navasan()
         if data:
-            save_markets_raw(data, now_label)
+            save_markets_raw(data, now_label, slot_key)
             return data, now_label, True
-        cached = load_markets_raw()
-        if cached:
-            return cached["data"], cached["fetchedAt"], False
-        return {}, None, False
-    else:
-        cached = load_markets_raw()
-        if cached:
-            return cached["data"], cached["fetchedAt"], False
-        data = fetch_navasan()
-        if data:
-            save_markets_raw(data, now_label)
-            return data, now_label, True
-        return {}, None, False
+
+    if cached:
+        return cached["data"], cached["fetchedAt"], False
+    return {}, None, False
 
 
 def build_markets(us10y, us2y, navasan_data, navasan_updated_label):
