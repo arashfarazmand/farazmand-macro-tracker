@@ -372,15 +372,31 @@ def main():
     for key, series_id in SERIES.items():
         histories[key] = fetch_series(series_id)
 
-    values = {k: (histories[k][-1][1] if histories[k] else None) for k in SERIES}
-    latest_date = None
-    for k in SERIES:
-        if histories[k]:
-            d = histories[k][-1][0]
-            if latest_date is None or d > latest_date:
-                latest_date = d
-    if latest_date is None:
+    def value_on_or_before(hist, target_date):
+        for d, v in reversed(hist):
+            if d <= target_date:
+                return v
+        return None
+
+    # Pick the date that the MAJORITY of series agree is their latest observation,
+    # not simply the single newest date across all series. Some administratively-set
+    # series (e.g. IORB, FFR target) or fast-updating ones (e.g. T10YIE) can publish
+    # a new day's value slightly ahead of market-observed series like DGS10/VIXCLS.
+    # Using max() here would prematurely stamp "today" onto an entry whose other
+    # 14 fields still reflect yesterday's data, making Today and Yesterday look
+    # identical. Using the most-common ("mode") latest date avoids that.
+    import collections
+    latest_dates = [histories[k][-1][0] for k in SERIES if histories[k]]
+    if not latest_dates:
         raise SystemExit("Could not fetch any data from FRED.")
+    date_counts = collections.Counter(latest_dates)
+    max_count = max(date_counts.values())
+    candidates = [d for d, c in date_counts.items() if c == max_count]
+    latest_date = max(candidates)  # tie-break toward the newer date
+
+    # Re-read every series' value AS OF the agreed date, so a series that already
+    # ticked ahead to tomorrow doesn't leak a too-early number into today's row.
+    values = {k: value_on_or_before(histories[k], latest_date) for k in SERIES}
 
     now_iran_fred = datetime.now(IRAN)
     jd_fred = jdatetime.date.fromgregorian(date=now_iran_fred.date())
