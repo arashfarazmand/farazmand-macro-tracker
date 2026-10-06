@@ -92,7 +92,6 @@ GOLD_BUBBLE = [
     ("bub_rob", "حباب ربع سکه", "📊", ""), ("bub_18ayar", "حباب طلای ۱۸ عیار", "📊", ""), ("bub_gerami", "حباب سکه گرمی", "📊", ""),
 ]
 
-# ساعت‌های بروزرسانی نوسان (به وقت ایران، بر حسب دقیقه از نیمه‌شب): ۹:۰۰، ۱۳:۰۰، ۱۷:۰۰
 NAVASAN_SLOTS_MIN = [9 * 60, 13 * 60, 17 * 60]
 
 
@@ -194,7 +193,6 @@ def fetch_navasan():
 
 
 def latest_slot_key(now_iran):
-    """آخرین ساعت مشخصی که تا الان گذشته (مثلاً 2026-09-28-780). برای هر ساعت فقط یک بار درخواست می‌رود."""
     now_min = now_iran.hour * 60 + now_iran.minute
     passed = [s for s in NAVASAN_SLOTS_MIN if s <= now_min]
     if passed:
@@ -289,10 +287,41 @@ def moving_avg(values, n):
 
 
 def load_history():
-    if os.path.exists(HISTORY_PATH):
-        with open(HISTORY_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+    """Load history.json and self-heal it: drop duplicate gdate entries (keeping the
+    most recently fetched version of each date) and make sure it is sorted strictly
+    ascending by gdate. This repairs corruption left over from an earlier bug where
+    dates could be appended out of order."""
+    if not os.path.exists(HISTORY_PATH):
+        return []
+    with open(HISTORY_PATH, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+    if not raw:
+        return []
+
+    by_date = {}
+    order_hint = {}
+    for i, entry in enumerate(raw):
+        gd = entry.get("gdate")
+        if not gd:
+            continue
+        prev = by_date.get(gd)
+        if prev is None:
+            by_date[gd] = entry
+            order_hint[gd] = i
+        else:
+            prev_fetched = prev.get("fetchedAt") or ""
+            cur_fetched = entry.get("fetchedAt") or ""
+            if cur_fetched >= prev_fetched or i > order_hint[gd]:
+                by_date[gd] = entry
+                order_hint[gd] = i
+
+    cleaned = [by_date[gd] for gd in sorted(by_date.keys())]
+
+    if cleaned != raw:
+        print(f"Repaired history.json: {len(raw)} raw entries -> {len(cleaned)} clean, sorted entries.")
+        save_history(cleaned)
+
+    return cleaned
 
 
 def save_history(history):
@@ -372,31 +401,22 @@ def main():
     for key, series_id in SERIES.items():
         histories[key] = fetch_series(series_id)
 
-    def value_on_or_before(hist, target_date):
-        for d, v in reversed(hist):
-            if d <= target_date:
-                return v
-        return None
-
-    # Pick the date that the MAJORITY of series agree is their latest observation,
-    # not simply the single newest date across all series. Some administratively-set
-    # series (e.g. IORB, FFR target) or fast-updating ones (e.g. T10YIE) can publish
-    # a new day's value slightly ahead of market-observed series like DGS10/VIXCLS.
-    # Using max() here would prematurely stamp "today" onto an entry whose other
-    # 14 fields still reflect yesterday's data, making Today and Yesterday look
-    # identical. Using the most-common ("mode") latest date avoids that.
-    import collections
-    latest_dates = [histories[k][-1][0] for k in SERIES if histories[k]]
-    if not latest_dates:
+    if not any(histories.values()):
         raise SystemExit("Could not fetch any data from FRED.")
-    date_counts = collections.Counter(latest_dates)
-    max_count = max(date_counts.values())
-    candidates = [d for d, c in date_counts.items() if c == max_count]
-    latest_date = max(candidates)  # tie-break toward the newer date
 
-    # Re-read every series' value AS OF the agreed date, so a series that already
-    # ticked ahead to tomorrow doesn't leak a too-early number into today's row.
-    values = {k: value_on_or_before(histories[k], latest_date) for k in SERIES}
+    # ---- Date selection: use TODAY'S actual calendar date (US Eastern time), never
+    # a date derived by voting/maxing across the 15 series. FRED series update on
+    # different schedules (daily, business-day-lagged, monthly), so trying to infer
+    # "today" from their observations is inherently unstable and can even move
+    # backward. Anchoring to the real wall-clock date guarantees entries are always
+    # appended in strict chronological order and a date is never revisited.
+    today_et = datetime.now(ET)
+    latest_date = today_et.date().isoformat()
+
+    # Each series' value is simply its most recent published observation as of right
+    # now (same as any financial site showing a "last known" value until the next
+    # official print lands).
+    values = {k: (histories[k][-1][1] if histories[k] else None) for k in SERIES}
 
     now_iran_fred = datetime.now(IRAN)
     jd_fred = jdatetime.date.fromgregorian(date=now_iran_fred.date())
@@ -437,12 +457,17 @@ def main():
     entry["ma"] = ma
 
     history = load_history()
+
     if history and history[-1]["gdate"] == entry["gdate"]:
         history[-1] = entry
         print(f"Updated existing entry for {entry['gdate']}")
+    elif history and entry["gdate"] < history[-1]["gdate"]:
+        print(f"WARNING: refusing to insert out-of-order date {entry['gdate']} "
+              f"before existing last entry {history[-1]['gdate']}. Skipping append.")
     else:
         history.append(entry)
         print(f"Added new entry for {entry['gdate']}")
+
     save_history(history)
 
     calendar = build_calendar()
