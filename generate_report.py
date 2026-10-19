@@ -29,6 +29,8 @@ SERIES = {
 MA_KEYS = ["us10y", "t10yie", "dfii10", "dltiit", "iorb", "effr",
            "cprate", "hyoas", "vix", "sahm", "t10y2y", "t10y2ym"]
 
+PREV_KEYS = MA_KEYS  # same set: every numeric series we show a "Yesterday" value for
+
 HISTORY_PATH = "data/history.json"
 MARKETS_RAW_PATH = "data/markets_raw.json"
 
@@ -289,7 +291,7 @@ def moving_avg(values, n):
 def load_history():
     """Load history.json and self-heal it: drop duplicate gdate entries (keeping the
     most recently fetched version of each date) and make sure it is sorted strictly
-    ascending by gdate. This repairs corruption left over from an earlier bug where
+    ascending by gdate. This repairs any corruption left over from earlier bugs where
     dates could be appended out of order."""
     if not os.path.exists(HISTORY_PATH):
         return []
@@ -413,9 +415,9 @@ def main():
     today_et = datetime.now(ET)
     latest_date = today_et.date().isoformat()
 
-    # Each series' value is simply its most recent published observation as of right
-    # now (same as any financial site showing a "last known" value until the next
-    # official print lands).
+    # Each series' "Today" value is simply its most recent published observation as
+    # of right now (same as any financial site showing a "last known" value until
+    # the next official print lands).
     values = {k: (histories[k][-1][1] if histories[k] else None) for k in SERIES}
 
     now_iran_fred = datetime.now(IRAN)
@@ -436,6 +438,19 @@ def main():
     entry["realRate"] = round(entry["us10y"] - entry["t10yie"], 2) if entry["us10y"] is not None and entry["t10yie"] is not None else None
     entry["cpffr"] = round(entry["cprate"] - entry["effr"], 2) if entry["cprate"] is not None and entry["effr"] is not None else None
 
+    # ---- "Yesterday" = the previous DISTINCT value actually published by FRED for
+    # each series - NOT whatever our own log happened to store for the prior
+    # calendar day. When a series hasn't posted a new print yet (e.g. we run before
+    # FRED's afternoon update), "Today" legitimately carries forward the same number
+    # as the last print - but "Yesterday" must still point at the print BEFORE that
+    # one, so a real change is never masked as "0". This comes straight from each
+    # series' own FRED history (histories[key]), which is always accurate regardless
+    # of what our local log looks like.
+    prev = {}
+    for k in PREV_KEYS:
+        h = histories[k]
+        prev[k] = h[-2][1] if len(h) >= 2 else None
+
     ma = {}
     for key in MA_KEYS:
         vals = [v for _, v in histories[key]]
@@ -447,21 +462,35 @@ def main():
     rr_vals = [round(us10y_map[d] - t10yie_map[d], 2) for d in common_dates]
     ma["realRate"] = {"ma7": moving_avg(rr_vals, 7), "ma30": moving_avg(rr_vals, 30),
                        "ma60": moving_avg(rr_vals, 60), "ma180": moving_avg(rr_vals, 180)}
+    prev["realRate"] = rr_vals[-2] if len(rr_vals) >= 2 else None
 
     cprate_map = dict(histories["cprate"]); effr_map = dict(histories["effr"])
     common2 = sorted(set(cprate_map) & set(effr_map))
     cpffr_vals = [round(cprate_map[d] - effr_map[d], 2) for d in common2]
     ma["cpffr"] = {"ma7": moving_avg(cpffr_vals, 7), "ma30": moving_avg(cpffr_vals, 30),
                     "ma60": moving_avg(cpffr_vals, 60), "ma180": moving_avg(cpffr_vals, 180)}
+    prev["cpffr"] = cpffr_vals[-2] if len(cpffr_vals) >= 2 else None
 
     entry["ma"] = ma
+    entry["prev"] = prev
 
+    # load_history() already de-duplicates and sorts; this is our self-healed, clean list.
     history = load_history()
+
+    # Fill in the FFR-target "previous" value from our own log (this field only
+    # changes a few times a year at FOMC meetings, so the last stored entry's band
+    # is the correct comparison).
+    if history:
+        entry["prev"]["ffr"] = history[-1].get("ffr")
+    else:
+        entry["prev"]["ffr"] = None
 
     if history and history[-1]["gdate"] == entry["gdate"]:
         history[-1] = entry
         print(f"Updated existing entry for {entry['gdate']}")
     elif history and entry["gdate"] < history[-1]["gdate"]:
+        # Should be structurally impossible now (wall-clock date only moves forward),
+        # but guard against it anyway rather than ever corrupting the ordering again.
         print(f"WARNING: refusing to insert out-of-order date {entry['gdate']} "
               f"before existing last entry {history[-1]['gdate']}. Skipping append.")
     else:
