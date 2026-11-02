@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import requests
 import jdatetime
 from datetime import date, datetime, timedelta
@@ -29,7 +30,20 @@ SERIES = {
 MA_KEYS = ["us10y", "t10yie", "dfii10", "dltiit", "iorb", "effr",
            "cprate", "hyoas", "vix", "sahm", "t10y2y", "t10y2ym"]
 
-PREV_KEYS = MA_KEYS  # same set: every numeric series we show a "Yesterday" value for
+PREV_KEYS = MA_KEYS  # every numeric series that has a "Yesterday" value
+
+# These two FRED series are published once a month. Their MA windows are converted
+# to months so that "MA-7 / MA-30 / MA-60 / MA-All" mean the same stretch of time
+# (about 7 / 30 / 60 / 180 days) for every row, instead of 7 / 30 / 60 / 180 MONTHS.
+MONTHLY_KEYS = {"sahm", "t10y2ym"}
+
+# Wide sanity ranges: only meant to catch garbage (API glitches), never real markets.
+VALID_RANGES = {
+    "us10y": (0, 20), "t10yie": (-3, 10), "dfii10": (-6, 15), "dltiit": (-6, 15),
+    "iorb": (0, 25), "effr": (0, 25), "cprate": (0, 25), "hyoas": (0, 30),
+    "vix": (5, 150), "sahm": (-5, 15), "t10y2y": (-6, 6), "t10y2ym": (-6, 6),
+    "realRate": (-7, 15), "cpffr": (-5, 5),
+}
 
 HISTORY_PATH = "data/history.json"
 MARKETS_RAW_PATH = "data/markets_raw.json"
@@ -105,6 +119,11 @@ def _jalali_dt_label(dt_iran):
     jd = jdatetime.date.fromgregorian(date=dt_iran.date())
     wd = WEEKDAY_FA[dt_iran.weekday()]
     return f"{wd} {_fa_num(jd.day)} {MONTHS_FA[jd.month - 1]} {_fa_num(jd.year)} - ساعت {dt_iran.strftime('%H:%M')}"
+
+
+def _now_label(now_iran):
+    jd = jdatetime.date.fromgregorian(date=now_iran.date())
+    return f"{_fa_num(jd.day)} {MONTHS_FA[jd.month - 1]} {_fa_num(jd.year)} - ساعت {now_iran.strftime('%H:%M')}"
 
 
 def _first_friday(year, month):
@@ -219,8 +238,7 @@ def save_markets_raw(data, fetched_at_label, slot_key):
 
 def get_navasan_snapshot():
     now_iran = datetime.now(IRAN)
-    jd = jdatetime.date.fromgregorian(date=now_iran.date())
-    now_label = f"{_fa_num(jd.day)} {MONTHS_FA[jd.month - 1]} {_fa_num(jd.year)} - ساعت {now_iran.strftime('%H:%M')}"
+    now_label = _now_label(now_iran)
 
     slot_key = latest_slot_key(now_iran)
     cached = load_markets_raw()
@@ -266,6 +284,8 @@ def build_markets(us10y, us2y, navasan_data, navasan_updated_label):
 
 
 def fetch_series(series_id, limit=250):
+    """Fetch the latest `limit` observations of a FRED series (oldest first).
+    Retries a few times so one transient network error does not kill the whole run."""
     params = {
         "series_id": series_id,
         "api_key": API_KEY,
@@ -273,12 +293,20 @@ def fetch_series(series_id, limit=250):
         "sort_order": "desc",
         "limit": limit,
     }
-    r = requests.get(BASE, params=params, timeout=30)
-    r.raise_for_status()
-    obs = r.json().get("observations", [])
-    result = [(o["date"], float(o["value"])) for o in obs if o["value"] not in (".", "", None)]
-    result.reverse()
-    return result
+    last_err = None
+    for attempt in range(1, 4):
+        try:
+            r = requests.get(BASE, params=params, timeout=30)
+            r.raise_for_status()
+            obs = r.json().get("observations", [])
+            result = [(o["date"], float(o["value"])) for o in obs if o["value"] not in (".", "", None)]
+            result.reverse()
+            return result
+        except Exception as e:
+            last_err = e
+            print(f"FRED fetch {series_id} failed (attempt {attempt}/3): {e}")
+            time.sleep(2 * attempt)
+    raise last_err
 
 
 def moving_avg(values, n):
@@ -288,11 +316,37 @@ def moving_avg(values, n):
     return round(sum(vals) / len(vals), 2)
 
 
+def window_for(key, n):
+    """Number of observations for an n-day moving average of this series."""
+    if key in MONTHLY_KEYS:
+        return max(1, round(n / 30.4))
+    return n
+
+
+def ma_block(key, vals):
+    return {
+        "ma7": moving_avg(vals, window_for(key, 7)),
+        "ma30": moving_avg(vals, window_for(key, 30)),
+        "ma60": moving_avg(vals, window_for(key, 60)),
+        "ma180": moving_avg(vals, window_for(key, 180)),
+    }
+
+
+def effective_market_date(now_et):
+    """The row's date = today's date in US Eastern time, except that the weekend
+    maps back to Friday (US markets are closed, so there is nothing new to record
+    and we do not want flat Saturday/Sunday points in the charts)."""
+    d = now_et.date()
+    if d.weekday() == 5:
+        d -= timedelta(days=1)
+    elif d.weekday() == 6:
+        d -= timedelta(days=2)
+    return d.isoformat()
+
+
 def load_history():
-    """Load history.json and self-heal it: drop duplicate gdate entries (keeping the
-    most recently fetched version of each date) and make sure it is sorted strictly
-    ascending by gdate. This repairs any corruption left over from earlier bugs where
-    dates could be appended out of order."""
+    """Load history.json and self-heal it: remove duplicate gdate rows (the later row
+    wins) and sort strictly ascending by date. Repairs corruption from older bugs."""
     if not os.path.exists(HISTORY_PATH):
         return []
     with open(HISTORY_PATH, "r", encoding="utf-8") as f:
@@ -301,21 +355,10 @@ def load_history():
         return []
 
     by_date = {}
-    order_hint = {}
-    for i, entry in enumerate(raw):
+    for entry in raw:
         gd = entry.get("gdate")
-        if not gd:
-            continue
-        prev = by_date.get(gd)
-        if prev is None:
-            by_date[gd] = entry
-            order_hint[gd] = i
-        else:
-            prev_fetched = prev.get("fetchedAt") or ""
-            cur_fetched = entry.get("fetchedAt") or ""
-            if cur_fetched >= prev_fetched or i > order_hint[gd]:
-                by_date[gd] = entry
-                order_hint[gd] = i
+        if gd:
+            by_date[gd] = entry  # later occurrence replaces earlier one
 
     cleaned = [by_date[gd] for gd in sorted(by_date.keys())]
 
@@ -330,6 +373,36 @@ def save_history(history):
     os.makedirs(os.path.dirname(HISTORY_PATH), exist_ok=True)
     with open(HISTORY_PATH, "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
+
+
+def assert_history_ok(history):
+    dates = [e.get("gdate") for e in history]
+    if any(not d for d in dates) or dates != sorted(set(dates)):
+        raise SystemExit(f"history ordering is invalid, refusing to publish: {dates[-6:]}")
+
+
+def validate_entry(e):
+    problems = []
+    for k, (lo, hi) in VALID_RANGES.items():
+        v = e.get(k)
+        if isinstance(v, bool) or not isinstance(v, (int, float)) or v != v:
+            problems.append(f"{k}: missing or NaN ({v!r})")
+        elif not (lo <= v <= hi):
+            problems.append(f"{k}: {v} is outside the plausible range [{lo}, {hi}]")
+    ffr = e.get("ffr")
+    if not ffr or ffr == "-":
+        problems.append("ffr: missing")
+    return problems
+
+
+def previous_distinct_ffr(history, today_ffr):
+    """The FFR target band only changes at FOMC meetings: return the last band that
+    differs from today's (or today's band if it has never changed in our log)."""
+    for e in reversed(history):
+        f = e.get("ffr")
+        if f and f != "-" and f != today_ffr:
+            return f
+    return today_ffr
 
 
 def gregorian_to_jalali_label(gdate_str):
@@ -406,31 +479,24 @@ def main():
     if not any(histories.values()):
         raise SystemExit("Could not fetch any data from FRED.")
 
-    # ---- Date selection: use TODAY'S actual calendar date (US Eastern time), never
-    # a date derived by voting/maxing across the 15 series. FRED series update on
-    # different schedules (daily, business-day-lagged, monthly), so trying to infer
-    # "today" from their observations is inherently unstable and can even move
-    # backward. Anchoring to the real wall-clock date guarantees entries are always
-    # appended in strict chronological order and a date is never revisited.
+    # Row date: today's date in US Eastern time (weekend -> Friday). It is never
+    # derived from the FRED observations themselves, so it can only move forward.
     today_et = datetime.now(ET)
-    latest_date = today_et.date().isoformat()
+    latest_date = effective_market_date(today_et)
 
-    # Each series' "Today" value is simply its most recent published observation as
-    # of right now (same as any financial site showing a "last known" value until
-    # the next official print lands).
+    # "Today" = the most recent value FRED has published for each series so far.
     values = {k: (histories[k][-1][1] if histories[k] else None) for k in SERIES}
 
-    now_iran_fred = datetime.now(IRAN)
-    jd_fred = jdatetime.date.fromgregorian(date=now_iran_fred.date())
-    fetched_at = f"{_fa_num(jd_fred.day)} {MONTHS_FA[jd_fred.month-1]} {_fa_num(jd_fred.year)} - ساعت {now_iran_fred.strftime('%H:%M')}"
+    fetched_at = _now_label(datetime.now(IRAN))
 
+    lo, hi = values["ffr_lower"], values["ffr_upper"]
     entry = {
         "gdate": latest_date,
         "jdate": gregorian_to_jalali_label(latest_date),
         "fetchedAt": fetched_at,
         "us10y": values["us10y"], "t10yie": values["t10yie"], "dfii10": values["dfii10"],
         "dltiit": values["dltiit"],
-        "ffr": f'{values["ffr_lower"]:.2f}-{values["ffr_upper"]:.2f}' if values["ffr_lower"] and values["ffr_upper"] else "-",
+        "ffr": f"{lo:.2f}-{hi:.2f}" if lo is not None and hi is not None else "-",
         "iorb": values["iorb"], "effr": values["effr"], "cprate": values["cprate"],
         "hyoas": values["hyoas"], "vix": values["vix"], "sahm": values["sahm"],
         "t10y2y": values["t10y2y"], "t10y2ym": values["t10y2ym"],
@@ -438,65 +504,57 @@ def main():
     entry["realRate"] = round(entry["us10y"] - entry["t10yie"], 2) if entry["us10y"] is not None and entry["t10yie"] is not None else None
     entry["cpffr"] = round(entry["cprate"] - entry["effr"], 2) if entry["cprate"] is not None and entry["effr"] is not None else None
 
-    # ---- "Yesterday" = the previous DISTINCT value actually published by FRED for
-    # each series - NOT whatever our own log happened to store for the prior
-    # calendar day. When a series hasn't posted a new print yet (e.g. we run before
-    # FRED's afternoon update), "Today" legitimately carries forward the same number
-    # as the last print - but "Yesterday" must still point at the print BEFORE that
-    # one, so a real change is never masked as "0". This comes straight from each
-    # series' own FRED history (histories[key]), which is always accurate regardless
-    # of what our local log looks like.
+    # "Yesterday" = the previous distinct value FRED itself published for each series
+    # (second-to-last observation), NOT the row we stored for the previous calendar
+    # day. So a change is never hidden just because "today" is still showing the last
+    # print while FRED has not posted a new one yet.
     prev = {}
     for k in PREV_KEYS:
         h = histories[k]
         prev[k] = h[-2][1] if len(h) >= 2 else None
+    # Derived rows use the same previous values that are shown for their components,
+    # so the table is arithmetically consistent.
+    prev["realRate"] = round(prev["us10y"] - prev["t10yie"], 2) if prev.get("us10y") is not None and prev.get("t10yie") is not None else None
+    prev["cpffr"] = round(prev["cprate"] - prev["effr"], 2) if prev.get("cprate") is not None and prev.get("effr") is not None else None
 
     ma = {}
     for key in MA_KEYS:
-        vals = [v for _, v in histories[key]]
-        ma[key] = {"ma7": moving_avg(vals, 7), "ma30": moving_avg(vals, 30),
-                   "ma60": moving_avg(vals, 60), "ma180": moving_avg(vals, 180)}
+        ma[key] = ma_block(key, [v for _, v in histories[key]])
 
     us10y_map = dict(histories["us10y"]); t10yie_map = dict(histories["t10yie"])
     common_dates = sorted(set(us10y_map) & set(t10yie_map))
     rr_vals = [round(us10y_map[d] - t10yie_map[d], 2) for d in common_dates]
-    ma["realRate"] = {"ma7": moving_avg(rr_vals, 7), "ma30": moving_avg(rr_vals, 30),
-                       "ma60": moving_avg(rr_vals, 60), "ma180": moving_avg(rr_vals, 180)}
-    prev["realRate"] = rr_vals[-2] if len(rr_vals) >= 2 else None
+    ma["realRate"] = ma_block("realRate", rr_vals)
 
     cprate_map = dict(histories["cprate"]); effr_map = dict(histories["effr"])
     common2 = sorted(set(cprate_map) & set(effr_map))
     cpffr_vals = [round(cprate_map[d] - effr_map[d], 2) for d in common2]
-    ma["cpffr"] = {"ma7": moving_avg(cpffr_vals, 7), "ma30": moving_avg(cpffr_vals, 30),
-                    "ma60": moving_avg(cpffr_vals, 60), "ma180": moving_avg(cpffr_vals, 180)}
-    prev["cpffr"] = cpffr_vals[-2] if len(cpffr_vals) >= 2 else None
+    ma["cpffr"] = ma_block("cpffr", cpffr_vals)
 
     entry["ma"] = ma
     entry["prev"] = prev
 
-    # load_history() already de-duplicates and sorts; this is our self-healed, clean list.
     history = load_history()
+    entry["prev"]["ffr"] = previous_distinct_ffr(history, entry["ffr"])
 
-    # Fill in the FFR-target "previous" value from our own log (this field only
-    # changes a few times a year at FOMC meetings, so the last stored entry's band
-    # is the correct comparison).
-    if history:
-        entry["prev"]["ffr"] = history[-1].get("ffr")
-    else:
-        entry["prev"]["ffr"] = None
-
-    if history and history[-1]["gdate"] == entry["gdate"]:
+    problems = validate_entry(entry)
+    if problems:
+        print("VALIDATION FAILED - today's row was NOT stored. Problems:")
+        for p in problems:
+            print("  -", p)
+        if not history:
+            raise SystemExit("No valid history available to publish.")
+    elif history and history[-1]["gdate"] == entry["gdate"]:
         history[-1] = entry
         print(f"Updated existing entry for {entry['gdate']}")
     elif history and entry["gdate"] < history[-1]["gdate"]:
-        # Should be structurally impossible now (wall-clock date only moves forward),
-        # but guard against it anyway rather than ever corrupting the ordering again.
         print(f"WARNING: refusing to insert out-of-order date {entry['gdate']} "
               f"before existing last entry {history[-1]['gdate']}. Skipping append.")
     else:
         history.append(entry)
         print(f"Added new entry for {entry['gdate']}")
 
+    assert_history_ok(history)
     save_history(history)
 
     calendar = build_calendar()
@@ -510,6 +568,10 @@ def main():
     output = template.replace("__HISTORY_JSON__", json.dumps(history, ensure_ascii=False))
     output = output.replace("__CALENDAR_JSON__", json.dumps(calendar, ensure_ascii=False))
     output = output.replace("__MARKETS_JSON__", json.dumps(markets, ensure_ascii=False))
+
+    for token in ("__HISTORY_JSON__", "__CALENDAR_JSON__", "__MARKETS_JSON__"):
+        if token in output:
+            raise SystemExit(f"Template placeholder {token} was not replaced; not publishing.")
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
